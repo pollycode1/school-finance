@@ -1,0 +1,2541 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>โปรแกรมการเงินโรงเรียน</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#14294b">
+<style>
+@font-face{font-family:"TH SarabunPSK";src:url(data:font/ttf;base64,{{FONT_REGULAR}}) format("truetype");font-weight:400;font-style:normal}
+@font-face{font-family:"TH SarabunPSK";src:url(data:font/ttf;base64,{{FONT_BOLD}}) format("truetype");font-weight:700;font-style:normal}
+:root{
+  --bg:#f3f5f8;--panel:#fff;--ink:#1d2433;--muted:#64708a;--line:#dde2ea;
+  --brand:#1f5fbf;--brand-ink:#fff;--brand-soft:#e7effb;--danger:#c0392b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"TH SarabunPSK",Tahoma,sans-serif;font-size:21px;line-height:1.35}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:flex;min-height:100vh}
+nav{width:290px;flex:none;background:#14294b;color:#dfe7f5;padding:18px 12px;display:flex;flex-direction:column;gap:4px}
+nav .logo{font-weight:700;font-size:26px;color:#fff;padding:4px 10px 14px;line-height:1.15}
+nav .logo small{display:block;font-weight:400;font-size:18px;color:#a9b8d3}
+nav .group{font-size:17px;color:#8ea2c6;padding:12px 10px 2px}
+nav button{all:unset;white-space:nowrap;cursor:pointer;padding:6px 12px;border-radius:8px;display:flex;align-items:center;gap:8px}
+nav button:hover{background:#1e3a66}
+nav button.active{background:var(--brand);color:#fff}
+nav button[disabled]{opacity:.45;cursor:default}
+nav button[disabled]:hover{background:none}
+nav .tag{margin-left:auto;white-space:nowrap;font-size:15px;background:#2a4572;border-radius:6px;padding:0 6px}
+main{flex:1;min-width:0;padding:20px 26px 40px}
+h1{font-size:34px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.card h2{font-size:25px;margin:0 0 10px}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:2px;flex:1;min-width:220px;margin-bottom:10px}
+.field label{font-weight:700;font-size:19px}
+.field .hint{color:var(--muted);font-size:17px}
+input[type=text],input[type=number],input[type=password],input[type=date],select,textarea{border:1px solid #c9d1de;border-radius:8px;padding:3px 10px;line-height:1.7;background:#fff;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:#f0f3f8}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--danger)}
+.btn:disabled{opacity:.6;cursor:wait}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.layout{display:grid;grid-template-columns:330px minmax(0,1fr);gap:16px;align-items:start}
+.typelist{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow:auto}
+.typeitem{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;line-height:1.15}
+.typeitem.active{border-color:var(--brand);background:var(--brand-soft)}
+.typeitem input{margin-top:5px}
+.typeitem small{display:block;color:var(--muted);font-size:16px}
+.switch{display:flex;align-items:center;gap:8px}
+.pill{display:inline-block;background:var(--brand-soft);color:var(--brand);border-radius:999px;padding:0 10px;font-weight:700}
+/* ---- A4 landscape page (mm based) ---- */
+.preview-wrap{background:#7d8798;border-radius:12px;padding:18px;overflow:hidden}
+.preview-scale{transform-origin:top left}
+.page{width:297mm;height:210mm;background:#fff;position:relative;box-shadow:0 4px 18px rgba(0,0,0,.3);font-family:"TH SarabunPSK";color:#000;overflow:hidden}
+.page .ln{position:absolute;left:25mm;right:25mm;text-align:center;font-weight:700;white-space:nowrap;line-height:1}
+.page .ln.right{text-align:right}
+.page .ln.left{text-align:left}
+.page.editable .ced{outline:none;border-radius:2px;padding:0 1mm;cursor:text;white-space:pre}
+.page.editable .ced:hover{background:#fff6d1;box-shadow:0 0 0 0.4mm #e6c35c}
+.page.editable .ced:focus{background:#fff8d6;box-shadow:0 0 0 0.5mm var(--brand)}
+.page.editable .ced:empty::before{content:attr(data-ph);color:#b6bcc8;font-weight:400}
+.msg{padding:8px 12px;border-radius:8px;background:#eaf6ec;color:#1e6b33;display:none;margin-top:8px}
+.msg.show{display:block}
+table.edit{width:100%;border-collapse:collapse}
+table.edit td,table.edit th{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+/* ---- ทะเบียนคุมเงิน ---- */
+.months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;margin-top:4px}
+.months button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 2px;cursor:pointer;line-height:1.1;text-align:center}
+.months button small{display:block;font-size:15px;color:var(--muted)}
+.months button.has{border-color:#9bb7e3}
+.months button.active{background:var(--brand);border-color:var(--brand);color:#fff}
+.months button.active small{color:#dce7fb}
+.months button.now::after{content:"เดือนนี้";display:block;font-size:13px;color:#d97706}
+.months button.active.now::after{color:#ffe7b3}
+.layout2{display:grid;grid-template-columns:400px minmax(0,1fr);gap:16px;align-items:start}
+.seg{display:flex;border:1px solid #c9d1de;border-radius:8px;overflow:hidden}
+.seg label{flex:1;text-align:center;padding:3px 4px;cursor:pointer;border-left:1px solid #c9d1de;white-space:nowrap}
+.seg label:first-child{border-left:0}
+.seg input{display:none}
+.seg label:has(input:checked){background:var(--brand);color:#fff}
+.seg label.rec:has(input:checked){background:#1e7d43}
+.money{text-align:right}
+textarea{resize:vertical;min-height:62px}
+.sumgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.sumgrid div{background:#f6f8fb;border-radius:8px;padding:6px 10px;line-height:1.2}
+.sumgrid b{display:block;font-size:24px}
+.sumgrid small{color:var(--muted)}
+table.list{width:100%;border-collapse:collapse;font-size:19px}
+table.list th,table.list td{border-bottom:1px solid var(--line);padding:3px 6px;vertical-align:top}
+table.list th{text-align:left;background:#f6f8fb}
+table.list td.n{text-align:right;white-space:nowrap}
+table.list tr.carry td{font-weight:700;background:#fbfcfe}
+table.list tr.editing td{background:#fff7e0}
+.linkbtn{all:unset;cursor:pointer;color:var(--brand);margin-right:8px}
+.linkbtn.del{color:var(--danger)}
+.empty{color:var(--muted);text-align:center;padding:14px}
+[hidden]{display:none!important}
+.stack{width:max-content;display:flex;flex-direction:column;gap:18px;transform-origin:top left}
+.page.reg .inner{position:absolute;left:15mm;right:15mm;top:8mm}
+.page.reg .hd{text-align:center;font-weight:700;font-size:18pt;line-height:7mm;white-space:nowrap}
+table.rt{border-collapse:collapse;table-layout:fixed;width:267mm;margin-top:2mm;font-size:16pt}
+table.rt td,table.rt th{border:0.3mm solid #000;padding:0 1mm;height:7mm;line-height:6.5mm;white-space:nowrap;overflow:hidden;vertical-align:middle}
+table.rt th{background:#e7e6e6;font-weight:700;text-align:center}
+table.rt tr.h1 th{height:9mm}
+table.rt tr.h2 th{height:13mm;white-space:normal}
+table.rt td.n{text-align:right}
+table.rt td.c{text-align:center}
+table.rt tr.b td{font-weight:700}
+table.rt td.lab{background:#efefef;text-align:right;font-weight:700}
+table.rt td.grey{background:#d9d9d9}
+table.rt td.hl{background:#fbe5d6;font-weight:700}
+table.rt td.ft{font-weight:700}
+.sig{display:flex;margin-top:5mm;font-size:16pt;line-height:6.8mm}
+.sig div{flex:1;text-align:center}
+@media (max-width:1100px){.layout2{grid-template-columns:minmax(0,1fr)}.months{grid-template-columns:repeat(6,minmax(0,1fr))}}
+/* ---- ตารางกรอกแบบทะเบียน ---- */
+.sheet-wrap{position:relative;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.sheet-wrap.fs{position:fixed;inset:0;z-index:1000;border-radius:0;border:0;overflow:auto;padding:12px 18px}
+.sheet-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.sheet-tip{color:var(--muted);font-size:17px}
+#rFullExit{margin-left:auto;display:none}
+.sheet-wrap.fs #rFullExit{display:inline-flex}
+.sheet{overflow-x:auto;padding-bottom:6px}
+.sheet .hd{text-align:center;font-weight:700;font-size:22px;line-height:1.35;color:#000}
+table.st{border-collapse:collapse;table-layout:fixed;width:100%;min-width:980px;margin-top:6px;font-size:20px;color:#000}
+table.st th,table.st td{border:1px solid #000;padding:0;height:34px;vertical-align:middle;overflow:hidden;white-space:nowrap}
+table.st th{background:#e7e6e6;font-weight:700;text-align:center;line-height:1.15}
+table.st td.g{border:0;text-align:center;background:transparent}
+table.st th.g{border:0;background:transparent}
+table.st td input{all:unset;box-sizing:border-box;display:block;width:100%;height:33px;padding:0 6px;font:inherit;color:#000;cursor:text}
+table.st td input:focus{background:#fff8d6;box-shadow:inset 0 0 0 2px var(--brand)}
+table.st td input::placeholder{color:#b6bcc8}
+table.st td.n input{text-align:right}
+table.st td.c input{text-align:center}
+table.st td.auto{background:#f4f5f7;padding:0 6px;text-align:right}
+table.st td.autol{background:#f4f5f7;padding:0 6px}
+table.st td.autol.c{text-align:center}
+table.st td.off{background:#fafafa}
+table.st tr.carry td{font-weight:700}
+table.st tr.carry td.n input{font-weight:700}
+table.st td.lab{background:#efefef;text-align:right;font-weight:700;padding:0 6px}
+table.st td.tot{font-weight:700;text-align:right;padding:0 6px;background:#f4f5f7}
+table.st td.grey{background:#d9d9d9}
+table.st td.hl{background:#fbe5d6}
+table.st tr:hover td.g button{opacity:1}
+.gbtn{all:unset;cursor:pointer;width:30px;height:30px;line-height:30px;border-radius:6px;opacity:.55;font-size:22px}
+.gbtn:hover{background:#eef2f8;opacity:1}
+.acct-tag{display:inline-block;font-size:14px;line-height:1;padding:2px 5px;border-radius:5px;background:#e7effb;color:var(--brand);margin-right:4px;vertical-align:middle}
+.sheet .sig{display:flex;margin-top:18px;font-size:20px;line-height:1.6;color:#000}
+.sheet input.sigday{all:unset;width:1.4em;padding:0 2px;text-align:center;border-bottom:1px dashed #8a94a6;cursor:text}
+.sheet input.sigday:focus{background:#fff8d6;border-bottom:2px solid var(--brand)}
+.sheet input.sigday.manual{color:#b45309;font-weight:700}
+.menu{position:absolute;z-index:1100;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:6px;min-width:260px;font-size:19px}
+.menu .mh{color:var(--muted);font-size:16px;padding:2px 8px}
+.menu button{all:unset;display:block;box-sizing:border-box;width:100%;padding:4px 10px;border-radius:6px;cursor:pointer}
+.menu button:hover{background:#eef2f8}
+.menu button.on{font-weight:700;color:var(--brand)}
+.menu button.on::before{content:"✓ "}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.menu .del{color:var(--danger)}
+/* ---- หน้าแรก: ชั้นหนังสือ ---- */
+main > section.view-in{animation:viewIn .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes viewIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.home-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.home-hero h1{font-size:40px;margin:0;line-height:1.1}
+.home-hero .sub{margin:2px 0 0}
+.home-fy{background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 16px;font-weight:700;font-size:22px;color:var(--brand)}
+.bookcase{position:relative;margin-top:18px;padding:30px 34px 0;border-radius:18px;
+  background:linear-gradient(180deg,#6b4428 0%,#5a3820 100%);box-shadow:inset 0 0 0 10px #4a2d18,inset 0 0 40px rgba(0,0,0,.45),0 18px 40px rgba(60,35,15,.25)}
+.shelf{position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;gap:34px 30px;padding:20px 10px 0;min-height:290px;perspective:1600px}
+.shelf::after{content:"";position:absolute;left:-24px;right:-24px;bottom:-22px;height:26px;border-radius:4px;
+  background:linear-gradient(180deg,#a5733f 0%,#8a5a2e 45%,#5f3c1d 100%);box-shadow:0 10px 18px rgba(0,0,0,.45)}
+.shelf-gap{height:56px}
+.book{position:relative;width:178px;height:248px;cursor:pointer;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  opacity:0;animation:bookIn .7s cubic-bezier(.2,.9,.25,1.2) forwards;animation-delay:calc(var(--i) * 90ms);outline:none}
+@keyframes bookIn{from{opacity:0;translate:0 -60px;rotate:-4deg}to{opacity:1;translate:0 0;rotate:0deg}}
+.book::after{content:"";position:absolute;left:8%;right:-6%;bottom:-8px;height:16px;border-radius:50%;background:radial-gradient(rgba(0,0,0,.55),transparent 70%);z-index:-1;transition:transform .45s,opacity .45s}
+.book.peek,.book:focus-visible{transform:translateY(-14px) rotateX(4deg)}
+.book.peek::after{transform:scale(.85);opacity:.6}
+@media (hover:hover){.book:hover{transform:translateY(-14px) rotateX(4deg)}.book:hover::after{transform:scale(.85);opacity:.6}.book:hover .cover::after{transform:translateX(120%)}.book:hover .cover{transform:rotateY(-32deg);box-shadow:inset 4px 0 8px rgba(255,255,255,.18),12px 10px 24px rgba(0,0,0,.45)}}
+/* หน้ากระดาษข้างใน */
+.book .pages{position:absolute;inset:4px 2px 4px 10px;border-radius:2px 8px 8px 2px;background:#fffdf6;
+  box-shadow:inset -6px 0 0 #efe7d3,inset -8px 0 0 #fff,inset -10px 0 0 #e9e0ca,inset -12px 0 0 #fff,inset -14px 0 0 #e4dac2,0 2px 6px rgba(0,0,0,.25);
+  padding:16px 18px 10px 22px;color:#3a3226;font-size:15px;line-height:1.25;overflow:hidden}
+.book .pages::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(180deg,transparent 0 21px,rgba(64,110,190,.13) 21px 22px);pointer-events:none}
+.book .pages::after{content:"";position:absolute;top:0;bottom:0;left:16px;width:1px;background:rgba(214,74,74,.35)}
+.pages .pg-m{font-weight:700;font-size:16px;color:#7a5a2a}
+.pages .pg-row{display:flex;justify-content:space-between;gap:6px;white-space:nowrap}
+.pages .pg-row span:first-child{overflow:hidden;text-overflow:ellipsis}
+.pages .pg-bal{margin-top:6px;font-weight:700;font-size:19px;color:#1f5f3a}
+.pages .pg-rec{color:#1e7d43}.pages .pg-pay{color:#b23b2e}
+.pages .pg-empty{color:#9a8f7a;font-style:italic;margin-top:10px}
+/* ปก */
+.book .cover{position:absolute;inset:0;border-radius:4px 12px 12px 4px;transform-origin:left center;transition:transform .8s cubic-bezier(.3,.8,.2,1),box-shadow .6s;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--c) 92%,#fff) 0%,var(--c) 45%,color-mix(in srgb,var(--c) 70%,#000) 100%);
+  box-shadow:inset 4px 0 8px rgba(255,255,255,.18),inset -2px -2px 6px rgba(0,0,0,.3),4px 6px 14px rgba(0,0,0,.4);
+  color:#fff;padding:20px 16px 14px 28px;display:flex;flex-direction:column;backface-visibility:hidden;overflow:hidden}
+.book .cover::before{content:"";position:absolute;left:0;top:0;bottom:0;width:16px;border-radius:4px 0 0 4px;
+  background:linear-gradient(90deg,rgba(0,0,0,.4),rgba(0,0,0,.12) 60%,rgba(255,255,255,.18) 80%,rgba(0,0,0,.25));}
+.book .cover::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.22) 45%,transparent 60%);transform:translateX(-120%);transition:transform .9s}
+.book.peek .cover::after{transform:translateX(120%)}
+.book.peek .cover,.book:focus-visible .cover{transform:rotateY(-32deg);box-shadow:inset 4px 0 8px rgba(255,255,255,.18),12px 10px 24px rgba(0,0,0,.45)}
+.cover .c-top{font-size:13px;opacity:.85;letter-spacing:.3px;line-height:1.15}
+.cover .c-title{margin-top:auto;font-weight:700;font-size:17px;opacity:.9;line-height:1.1}
+.cover .c-type{font-weight:700;font-size:25px;line-height:1.05;margin:4px 0 8px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.cover .c-band{height:3px;background:linear-gradient(90deg,#f6d77a,#c99a2e);border-radius:2px;margin:6px 0}
+.cover .c-fy{display:inline-block;align-self:flex-start;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:0 10px;font-weight:700;font-size:16px}
+.cover .c-school{font-size:12px;opacity:.75;margin-top:auto;line-height:1.15}
+.cover .c-stat{font-size:13px;opacity:.85;margin-top:4px}
+/* กดเปิดเล่ม */
+.book.opening{z-index:50;transition:transform .9s cubic-bezier(.5,0,.2,1)}
+.book.opening .cover{transform:rotateY(-165deg);transition-duration:.9s}
+.book.add{border:3px dashed rgba(255,230,190,.55);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#ffe9c6;background:rgba(255,255,255,.05)}
+.book.add b{font-size:54px;line-height:1}
+.book.add:hover,.book.add.peek{background:rgba(255,255,255,.12)}
+.book.add .cover,.book.add .pages{display:none}
+.page-flash{position:fixed;inset:0;z-index:2000;background:#fffdf6;opacity:0;pointer-events:none;transition:opacity .35s}
+.page-flash.on{opacity:1}
+.back-home{margin-bottom:10px}
+.home-tip{color:#e9d8bd;text-align:center;padding:30px 0 18px;font-size:18px}
+@media (prefers-reduced-motion:reduce){.book,.book .cover,main>section.view-in{animation:none!important;transition:none!important;opacity:1}}
+#printArea{display:none}
+@media (max-width:900px){.app{flex-direction:column}nav{width:auto;flex-direction:row;flex-wrap:wrap}nav .group{display:none}.layout{grid-template-columns:minmax(0,1fr)}main{padding:16px}}
+
+/* ---- รายงานเงินคงเหลือประจำวัน ---- */
+.page.rp{width:210mm;height:297mm}
+.page.rp .inner{position:absolute;left:15mm;right:15mm;top:12mm}
+.page.rp .hd{text-align:center;font-weight:700;font-size:16pt;line-height:6.5mm;white-space:nowrap}
+table.rpt{border-collapse:collapse;table-layout:fixed;width:180mm;margin-top:2mm;font-size:15pt}
+table.rpt td,table.rpt th{border:0.3mm solid #000;padding:0 1mm;line-height:5.6mm;white-space:nowrap;overflow:hidden;vertical-align:middle}
+table.rpt th{font-weight:400;text-align:center;height:11mm;white-space:normal;line-height:5mm}
+table.rpt td.n{text-align:right}
+table.rpt tr.b td{font-weight:700}
+table.rpt tr.tot td{font-weight:700;border-top:0.6mm double #000;border-bottom:0.6mm double #000}
+table.rpt tr.tot td:first-child{text-align:center}
+.page.rp .sg{font-size:15pt;line-height:6mm}
+.page.rp .sg .c{text-align:center;white-space:nowrap}
+.page.rp .sg .row3{display:flex}
+.page.rp .sg .row3>div{flex:1;text-align:center}
+/* ตารางกรอกบนจอ */
+#rpWrap .sheet table.st{min-width:820px}
+table.st.rp td.lbl input{font-weight:inherit}
+table.st.rp tr.b td{font-weight:700}
+table.st.rp tr.b td input{font-weight:700}
+table.st.rp tr.head td.lbl{background:#fafafa}
+table.st.rp td.lbl{position:relative}
+table.st.rp td.lbl .book-tag{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;cursor:pointer;font:inherit;font-size:14px;padding:3px 7px}
+table.st.rp td.lbl .book-tag:hover{background:#cfe8d4}
+table.st.rp td.lbl .book-tag.empty{background:#f1f3f6;color:#8a94a6}
+table.st.rp td.lbl .book-tag.empty:hover{background:#e3f1e5;color:#1e7d43}
+table.st.rp td.lbl input{padding-right:110px}
+.menu label.chk{display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:6px;cursor:pointer}
+.menu label.chk:hover{background:#eef2f8}
+.menu .sumline{padding:4px 10px;color:var(--muted);font-size:16px}
+.menu .okrow{display:flex;gap:8px;justify-content:flex-end;padding:6px 6px 2px}
+table.st.rp tr.tot td:not(.g){font-weight:700;border-top:3px double #000;border-bottom:3px double #000}
+table.st.rp td.sp{background:#fff}
+table.st.rp td.link{background:#eef5ee;padding:0 6px;text-align:right}
+.book-tag{display:inline-block;font-size:14px;line-height:1;padding:2px 5px;border-radius:5px;background:#e3f1e5;color:#1e7d43;margin-right:4px;vertical-align:middle;font-weight:400;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.rp-sig{margin-top:18px;font-size:20px;line-height:1.7;color:#000;min-width:820px}
+.rp-sig .c{text-align:center}
+.rp-sig .row3{display:flex}.rp-sig .row3>div{flex:1;text-align:center}
+.rp-sig input{all:unset;box-sizing:border-box;border-bottom:1px dashed #9aa6b8;min-width:200px;text-align:center;padding:0 4px;cursor:text}
+.rp-sig input:focus{background:#fff8d6}
+.rp-legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:17px;margin:4px 0 8px}
+.rp-legend i{display:inline-block;width:14px;height:14px;border:1px solid #bbb;vertical-align:-2px;margin-right:4px}
+@media (max-width:600px){ .rp-sig{font-size:17px;min-width:700px} #rpWrap .sheet table.st{min-width:700px} }
+.whole-book{margin-top:10px;padding:8px 10px;border-radius:10px;background:#fff7e6;border:1px solid #f1d9a6}
+/* ---- เข้าสู่ระบบ / ซิงก์ / ประวัติ ---- */
+.login{position:fixed;inset:0;z-index:3000;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow:auto;
+  background:radial-gradient(1200px 600px at 20% 10%,#2b5aa8 0%,transparent 60%),radial-gradient(900px 500px at 90% 90%,#6b4428 0%,transparent 55%),#14294b}
+.login-card{margin:auto;width:100%;max-width:520px;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.35);padding:26px 26px 20px;animation:viewIn .5s cubic-bezier(.2,.8,.2,1)}
+.login-card h1{font-size:32px;margin:0;line-height:1.15}
+.login-card .sch{color:var(--muted);margin:2px 0 16px;line-height:1.25}
+.login-logo{font-size:46px;line-height:1;margin-bottom:6px}
+.dbopt{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 12px}
+.dbopt label{border:2px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;line-height:1.2;display:block}
+.dbopt label b{display:block;font-size:21px}
+.dbopt label small{color:var(--muted);font-size:16px}
+.dbopt input{display:none}
+.dbopt label:has(input:checked){border-color:var(--brand);background:var(--brand-soft)}
+.login-card .field{min-width:0}
+.login-card .btn.big{width:100%;justify-content:center;font-size:22px;padding:8px 14px;margin-top:6px}
+.login-card .link{all:unset;color:var(--brand);cursor:pointer;font-size:17px}
+.login-card .err{color:var(--danger);min-height:24px;font-size:18px}
+.login-card .note{color:var(--muted);font-size:16px;line-height:1.3}
+.login-foot{display:flex;justify-content:space-between;gap:10px;margin-top:10px;flex-wrap:wrap}
+@media (max-width:600px){.dbopt{grid-template-columns:1fr}.login-card{padding:20px 16px}}
+.sync{margin-top:auto;padding:10px 10px 0;border-top:1px solid #2a4572;font-size:16px;color:#a9b8d3;line-height:1.3}
+.sync .st{display:flex;align-items:center;gap:6px}
+.sync .dot{width:9px;height:9px;border-radius:50%;background:#7c8aa5;flex:none}
+.sync .dot.ok{background:#3ecf7a}.sync .dot.busy{background:#f2c14e;animation:pulse 1s infinite}.sync .dot.err{background:#ff6b5b}
+@keyframes pulse{50%{opacity:.35}}
+.sync button{all:unset;cursor:pointer;color:#dfe7f5;padding:4px 0;display:block}
+.sync button:hover{color:#fff;text-decoration:underline}
+@media (max-width:1180px){.sync{margin:0;border:0;padding:0 6px;display:flex;align-items:center;gap:12px;flex:none;white-space:nowrap}.sync button{padding:0}}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.hist li .when{font-weight:700;min-width:190px}
+.hist li .what{color:var(--muted);flex:1;min-width:160px}
+.hist li .acts{display:flex;gap:6px}
+.hist li.cur .when::after{content:" (ล่าสุด)";color:var(--brand);font-weight:400}
+/* ===== มือถือ / แท็บเล็ต ===== */
+.book,.btn,nav button,.gbtn,.months button{touch-action:manipulation}
+.sheet .sig{min-width:1150px}
+@media (max-width:1180px){
+  .app{flex-direction:column}
+  nav{position:sticky;top:0;z-index:900;width:auto;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:4px;padding:8px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+  nav::-webkit-scrollbar{display:none}
+  nav .group,nav button[disabled]{display:none}
+  nav .logo{flex:none;padding:0 12px 0 4px;font-size:22px}
+  nav .logo small{display:none}
+  nav button{flex:none;padding:6px 14px}
+  main{padding:16px 18px 40px}
+}
+@media (max-width:600px){
+  body{font-size:19px}
+  main{padding:12px 12px 32px}
+  h1{font-size:28px}
+  nav .logo{display:none}
+  nav button{padding:6px 11px;gap:5px}
+  .card{padding:12px 12px;border-radius:10px}
+  .field{min-width:0}
+  #view-register .field{max-width:none!important;flex-basis:100%}
+  .home-hero h1{font-size:30px}
+  .home-fy{font-size:18px;padding:2px 12px}
+  .bookcase{padding:18px 14px 0;border-radius:14px;box-shadow:inset 0 0 0 6px #4a2d18,inset 0 0 30px rgba(0,0,0,.45),0 12px 26px rgba(60,35,15,.25)}
+  .shelf{gap:26px 16px;padding:14px 4px 0;min-height:0;justify-content:center}
+  .shelf::after{left:-10px;right:-10px;bottom:-18px;height:20px}
+  .shelf-gap{height:46px}
+  .book{width:136px;height:192px}
+  .book .cover{padding:12px 9px 10px 22px;border-radius:3px 9px 9px 3px}
+  .book .cover::before{width:12px}
+  .cover .c-top{font-size:10.5px}
+  .cover .c-title{font-size:13px}
+  .cover .c-type{font-size:19px;margin:3px 0 6px}
+  .cover .c-fy{font-size:13px;padding:0 8px}
+  .cover .c-stat{font-size:11px}
+  .cover .c-school{font-size:10px}
+  .book .pages{padding:10px 8px 8px 20px;font-size:12px;line-height:1.2}
+  .book .pages::before{background:repeating-linear-gradient(180deg,transparent 0 16px,rgba(64,110,190,.13) 16px 17px)}
+  .pages .pg-m{font-size:13px}.pages .pg-bal{font-size:15px;margin-top:4px}
+  .book.add b{font-size:40px}
+  .home-tip{font-size:16px;padding:22px 0 14px}
+  .months{gap:4px}
+  .sheet-wrap{padding:10px}
+  .sheet-wrap.fs{padding:8px}
+  .sheet-tip{font-size:15px}
+  table.st{min-width:960px;font-size:17px}
+  .sheet .hd{font-size:19px;text-align:left}
+  .sheet .sig{min-width:960px;font-size:17px}
+  .menu{font-size:18px;min-width:240px}
+}
+@media (hover:none){
+  .gbtn{opacity:1;width:36px;height:36px;line-height:36px}
+  .menu button{padding:8px 12px}
+}
+@media print{
+  @page{size:A4 landscape;margin:0}
+  body{background:#fff}
+  .app{display:none}
+  #printArea{display:block}
+  #printArea .page{box-shadow:none;page-break-after:always;break-after:page}
+  #printArea .page:last-child{page-break-after:auto;break-after:auto}
+}
+</style>
+</head>
+<body>
+<div class="login" id="login" hidden>
+  <div class="login-card" id="loginCard"></div>
+</div>
+<div class="app">
+  <nav>
+    <div class="logo">โปรแกรมการเงิน<small id="navSchool"></small></div>
+    <button data-view="home" class="active">🏠 ชั้นหนังสือ</button>
+    <div class="group">พิมพ์เอกสาร</div>
+    <button data-view="cover">📘 ปกทะเบียนคุมเงิน</button>
+    <button data-view="register">📒 ทะเบียนคุมเงิน</button>
+    <button data-view="report">🧾 รายงานเงินคงเหลือ</button>
+    <div class="group">ระบบ</div>
+    <button data-view="history">🕘 ประวัติ / สำรองข้อมูล</button>
+    <button data-view="settings">⚙️ ตั้งค่า</button>
+  </nav>
+
+  <main>
+    <!-- ===== หน้าแรก: ชั้นหนังสือ ===== -->
+    <section id="view-home">
+      <div class="home-hero">
+        <div><h1>ชั้นหนังสือทะเบียนคุมเงิน</h1><p class="sub" id="homeSchool"></p></div>
+        <div class="home-fy" id="homeFy"></div>
+      </div>
+      <div class="bookcase" id="bookcase"></div>
+    </section>
+
+    <!-- ===== หน้าปก ===== -->
+    <section id="view-cover" hidden>
+      <h1>ปกทะเบียนคุมเงิน</h1>
+      <p class="sub">เลือกเล่ม แล้ว<b>คลิกที่ข้อความบนปกเพื่อแก้ไข</b>ได้เลย จากนั้นส่งออกเป็น Word หรือ PDF (กระดาษ A4 แนวนอน)</p>
+      <div class="layout">
+        <div>
+          <div class="card">
+            <h2>เล่ม / ปก</h2>
+            <div class="typelist" id="typeList"></div>
+            <div class="toolbar" style="margin-top:8px">
+              <button class="btn primary" id="addBook">＋ เพิ่มเล่มใหม่</button>
+              <button class="btn" id="selAll">เลือกทั้งหมด</button>
+              <button class="btn" id="selNone">ไม่เลือก</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>ตัวเลือกปกนี้</h2>
+            <label class="switch"><input type="checkbox" id="showHeader"> แสดงข้อความหัวมุมขวา</label>
+            <div class="hint" id="showHeaderHint" style="color:var(--muted);font-size:17px;margin:2px 0 10px 26px"></div>
+            <button class="btn danger" id="delBook">🗑 ลบเล่มนี้</button>
+          </div>
+          <div class="card">
+            <h2>ปีงบประมาณ</h2>
+            <div style="font-size:30px;font-weight:700" id="fyShow"></div>
+            <div class="sub" id="fyHint" style="margin:0"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="toolbar">
+              <button class="btn primary" id="btnDocx">⬇ Word (.docx)</button>
+              <button class="btn primary" id="btnPdf">⬇ PDF</button>
+              <button class="btn" id="btnPrint">🖨 พิมพ์</button>
+              <label class="switch" style="margin-left:auto"><input type="checkbox" id="multi"> ส่งออกทุกปกที่ติ๊กไว้ในไฟล์เดียว</label>
+            </div>
+            <div class="msg" id="msg"></div>
+          </div>
+          <div class="preview-wrap" id="previewWrap"><div class="preview-scale" id="previewScale"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ทะเบียนคุมเงิน (หน้าภายในเล่ม) ===== -->
+    <section id="view-register" hidden>
+      <button class="btn back-home" id="backHome">← กลับชั้นหนังสือ</button>
+      <h1>ทะเบียนคุมเงิน</h1>
+      <p class="sub">พิมพ์รายการลงในตารางได้เลยเหมือนเขียนในเล่ม ช่องสีเทาโปรแกรมเติมให้อัตโนมัติ (ยอดยกมา ยอดคงเหลือ แถวรวม ลายเซ็น)</p>
+
+      <div class="card">
+        <div class="row">
+          <div class="field"><label for="rType">ประเภทเงิน</label><select id="rType"></select></div>
+          <div class="field" style="max-width:300px"><label for="rAcct">บัญชีเริ่มต้นของเล่มนี้</label>
+            <select id="rAcct"><option value="bank">เงินฝากธนาคาร</option><option value="cash">เงินสด</option><option value="gov">เงินฝากส่วนราชการผู้เบิก</option></select>
+            <span class="hint">รายการใหม่จะคิดยอดคงเหลือเข้าช่องนี้อัตโนมัติ (เปลี่ยนรายรายการได้ที่ปุ่ม ⋮)</span></div>
+          <div class="field" style="max-width:220px"><label for="rFy">ปีงบประมาณ (พ.ศ.)</label><input type="number" id="rFy" min="2500" max="2700"></div>
+        </div>
+        <label style="font-weight:700;font-size:19px">เดือน <span style="font-weight:400;color:var(--muted)">(เลือกเดือนปัจจุบันให้อัตโนมัติ กดเปลี่ยนเดือนได้)</span></label>
+        <div class="months" id="rMonths"></div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <button class="btn primary" id="rFull">⛶ เต็มจอ</button>
+          <select id="rScope" style="width:auto"><option value="month">พิมพ์เฉพาะเดือนที่เลือก</option><option value="year">พิมพ์ทั้งปี (ทุกเดือนที่ถึงแล้ว)</option><option value="book">📚 ทั้งเล่ม: ปก + เนื้อหาทุกเดือน</option></select>
+          <button class="btn primary" id="rDocx">⬇ Word (.docx)</button>
+          <button class="btn primary" id="rPdf">⬇ PDF</button>
+          <button class="btn" id="rPrint">🖨 พิมพ์</button>
+          <label class="switch"><input type="checkbox" id="rSpacer"> เว้นบรรทัดระหว่างรายการ (ตอนพิมพ์)</label>
+        </div>
+        <div class="toolbar whole-book">
+          <b>📚 ทั้งเล่ม (ปก + เนื้อหาทุกเดือน):</b>
+          <button class="btn primary" id="bkDocx">⬇ Word ทั้งเล่ม</button>
+          <button class="btn primary" id="bkPdf">⬇ PDF ทั้งเล่ม</button>
+          <button class="btn" id="bkPrint">🖨 พิมพ์ทั้งเล่ม</button>
+        </div>
+        <div class="msg" id="msgRegX"></div>
+      </div>
+
+      <div id="sheetWrap" class="sheet-wrap">
+        <div class="sheet-bar">
+          <b id="sheetTitle"></b>
+          <button class="btn" id="rUndo" title="ย้อนกลับ (Ctrl+Z)" disabled>↶ ย้อนกลับ</button>
+          <button class="btn" id="rRedo" title="ทำซ้ำ (Ctrl+Y)" disabled>↷ ทำซ้ำ</button>
+          <span class="sheet-tip">พิมพ์ในช่องแล้วกด Enter / Tab • วันที่พิมพ์แค่ตัวเลขวันก็ได้ • ⋮ ท้ายแถว = เปลี่ยนบัญชี, เพิ่มบรรทัด, ลบ</span>
+          <button class="btn" id="rFullExit">✕ ออกจากเต็มจอ</button>
+        </div>
+        <div class="sheet" id="sheet"></div>
+        <div class="msg" id="msgReg"></div>
+      </div>
+
+    </section>
+
+    <!-- ===== รายงานเงินคงเหลือประจำวัน ===== -->
+    <section id="view-report" hidden>
+      <h1>รายงานเงินคงเหลือประจำวัน</h1>
+      <p class="sub">แถวที่ผูกกับเล่มทะเบียน โปรแกรมดึงยอดคงเหลือ ณ วันที่รายงานให้อัตโนมัติ แถวอื่นพิมพ์ยอดเองได้ ส่วนแถวรวมคำนวณให้เอง (A4 แนวตั้ง)</p>
+      <div class="card">
+        <div class="toolbar">
+          <label style="display:flex;align-items:center;gap:8px;font-weight:700">ประจำวันที่ <input type="date" id="rpDate" style="width:auto"></label>
+          <button class="btn" id="rpToday">วันนี้</button>
+          <button class="btn" id="rpMonthEnd">วันทำการสุดท้ายของเดือน</button>
+          <span id="rpDateTh" class="pill"></span>
+        </div>
+        <div class="toolbar" style="margin-top:10px">
+          <button class="btn primary" id="rpDocx">⬇ Word (.docx)</button>
+          <button class="btn primary" id="rpPdf">⬇ PDF</button>
+          <button class="btn" id="rpPrint">🖨 พิมพ์</button>
+        </div>
+        <div class="msg" id="msgRp"></div>
+      </div>
+      <div class="sheet-wrap" id="rpWrap">
+        <div class="rp-legend"><span><i style="background:#eef5ee"></i>ดึงจากเล่มทะเบียน</span><span><i style="background:#f4f5f7"></i>รวมอัตโนมัติ</span><span><i style="background:#fff"></i>พิมพ์เองได้</span><span>📒 ในช่องประเภท = เลือกเล่มที่ดึงยอด (หลายเล่มรวมกัน)</span><span>⋮ ท้ายแถว = ชนิดแถว, เลื่อน, เพิ่ม/ลบแถว</span></div>
+        <div class="sheet" id="rpSheet"></div>
+        <div class="toolbar" style="margin-top:12px">
+          <button class="btn" id="rpAddRow">＋ เพิ่มแถวท้ายตาราง</button>
+          <button class="btn danger" id="rpReset">↺ คืนรายการตามแบบฟอร์มเดิม</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ประวัติ / สำรองข้อมูล ===== -->
+    <section id="view-history" hidden>
+      <h1>ประวัติการบันทึก</h1>
+      <p class="sub" id="histSub"></p>
+      <div class="card">
+        <div class="toolbar">
+          <button class="btn primary" id="histNow">☁️ สำรองข้อมูลตอนนี้</button>
+          <button class="btn" id="histReload">↻ โหลดรายการใหม่</button>
+          <span class="pill" id="histDb"></span>
+        </div>
+        <div class="msg" id="msgHist"></div>
+      </div>
+      <div class="card"><h2 id="histTitle">เวอร์ชันย้อนหลัง</h2><ul class="hist" id="histList"></ul>
+        <div class="toolbar" style="margin-top:8px"><button class="btn" id="histMore" hidden>โหลดเพิ่ม</button></div></div>
+      <div class="card"><h2>สำเนาในเครื่องนี้</h2><p class="sub" style="margin:0 0 6px">โปรแกรมเก็บสำเนาอัตโนมัติในเครื่องทุก 10 นาทีที่มีการแก้ไข (สูงสุด 40 ชุด) ใช้กู้คืนได้แม้ไม่มีอินเทอร์เน็ต</p><ul class="hist" id="histLocal"></ul></div>
+    </section>
+
+    <!-- ===== ตั้งค่า ===== -->
+    <section id="view-settings" hidden>
+      <h1>ตั้งค่า</h1>
+      <p class="sub">ค่าที่ตั้งไว้จะถูกจำไว้ในเครื่องนี้ และใช้กับเอกสารทุกชนิดในโปรแกรม</p>
+
+      <div class="card">
+        <h2>ข้อมูลโรงเรียน</h2>
+        <div class="row">
+          <div class="field"><label for="sSchool">ชื่อโรงเรียน</label><input type="text" id="sSchool"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="sOffice">สังกัด (สำนักงานเขตพื้นที่การศึกษา)</label><input type="text" id="sOffice"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>ปีงบประมาณ</h2>
+        <div class="row">
+          <div class="field" style="flex:0 0 auto;min-width:0">
+            <label class="switch"><input type="checkbox" id="sFyAuto"> คำนวณอัตโนมัติจากวันที่ปัจจุบัน</label>
+            <span class="hint">ปีงบประมาณเริ่ม 1 ตุลาคม ถึง 30 กันยายนปีถัดไป (พ.ศ.)</span>
+          </div>
+          <div class="field" style="max-width:220px">
+            <label for="sFy">ปีงบประมาณ (พ.ศ.)</label>
+            <input type="number" id="sFy" min="2500" max="2700">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>ประเภทเงิน / ปก</h2>
+        <p class="sub" style="margin-top:0">แก้ไขข้อความบนปกและหัวทะเบียนของแต่ละประเภทเงิน หรือเพิ่มประเภทใหม่ได้</p>
+        <table class="edit">
+          <thead><tr><th style="width:22%">ข้อความหัวมุมขวา</th><th style="width:20%">ชื่อทะเบียน</th><th>ประเภท (บนปก)</th><th>ประเภท (หน้าในเล่ม)</th><th style="width:150px">บัญชีเริ่มต้น</th><th style="width:70px"></th></tr></thead>
+          <tbody id="typeRows"></tbody>
+        </table>
+        <div class="toolbar" style="margin-top:10px">
+          <button class="btn" id="addType">＋ เพิ่มประเภทปก</button>
+          <button class="btn danger" id="resetTypes" style="margin-left:auto">คืนค่าประเภทปกเริ่มต้น</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>ผู้ลงนามในทะเบียน</h2>
+        <p class="sub" style="margin:0 0 6px">ติ๊กเลือกคนที่ต้องลงนาม (2 หรือ 3 คน) และกดลูกศร ▲▼ เพื่อสลับลำดับ แถวบนสุด = ซ้ายสุดในเอกสาร</p>
+        <table class="edit" id="signTable">
+          <thead><tr><th style="width:60px">ลำดับ</th><th style="width:50px">ใช้</th><th style="width:150px">ผู้ลงนาม</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง (ที่พิมพ์ใต้ชื่อ)</th><th style="width:96px">สลับ</th></tr></thead>
+          <tbody id="signRows">
+            <tr data-key="acc"><td class="ord"></td><td><input type="checkbox" class="use"></td><td>เจ้าหน้าที่บัญชี</td><td><input type="text" id="sAccName" placeholder="เช่น นาง..."></td><td><input type="text" id="sAccPos"></td><td class="mv"></td></tr>
+            <tr data-key="fin"><td class="ord"></td><td><input type="checkbox" class="use"></td><td>เจ้าหน้าที่การเงิน</td><td><input type="text" id="sOfficerName" placeholder="เช่น นางสาว..."></td><td><input type="text" id="sOfficerPos"></td><td class="mv"></td></tr>
+            <tr data-key="dir"><td class="ord"></td><td><input type="checkbox" class="use"></td><td>ผู้อำนวยการ</td><td><input type="text" id="sDirName" placeholder="เช่น นาย..."></td><td><input type="text" id="sDirPos" placeholder="เว้นว่าง = ผู้อำนวยการ + ชื่อโรงเรียน"></td><td class="mv"></td></tr>
+          </tbody>
+        </table>
+        <div class="hint" id="signPreview" style="margin:6px 0 12px;color:var(--muted)"></div>
+        <div class="field" style="margin-bottom:12px">
+          <label>วันที่ใต้ลายเซ็น</label>
+          <label class="switch"><input type="checkbox" id="sDateOn"> แสดงวันที่ใต้ลายเซ็น</label>
+          <label class="switch"><input type="checkbox" id="sSkipWknd"> ใช้วันทำการสุดท้ายของเดือน (ถ้าสิ้นเดือนตรงเสาร์-อาทิตย์ เลื่อนเป็นวันศุกร์)</label>
+          <span class="hint">แก้วันที่ของแต่ละเดือนเองได้ในหน้าทะเบียน (คลิกที่ตัวเลขวันใต้ลายเซ็น)</span>
+        </div>
+        <div class="row">
+          <div class="field" style="max-width:260px"><label for="sRows">จำนวนบรรทัดรายการต่อหน้า</label><input type="number" id="sRows" min="5" max="14"><span class="hint">ค่าเริ่มต้น 12 (เหมือนแบบฟอร์ม)</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>สำรอง / นำเข้าข้อมูล</h2>
+        <p class="sub" style="margin-top:0">ข้อมูลทั้งหมดเก็บอยู่ในเบราว์เซอร์ของเครื่องนี้เท่านั้น ควรกดสำรองข้อมูลเก็บไว้เป็นระยะ (เช่น ทุกสิ้นเดือน) และใช้ไฟล์สำรองย้ายไปเครื่องอื่นได้</p>
+        <div class="toolbar">
+          <button class="btn primary" id="backupBtn">⬇ สำรองข้อมูล (.json)</button>
+          <label class="btn">⬆ นำเข้าข้อมูล<input type="file" id="restoreFile" accept=".json,application/json" hidden></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>ขนาดตัวอักษรบนปก (พอยต์)</h2>
+        <div class="row" id="sizeRow"></div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn primary" id="saveSettings">💾 บันทึก</button>
+        <button class="btn danger" id="resetAll">คืนค่าเริ่มต้นทั้งหมด</button>
+      </div>
+      <div class="msg" id="msgSettings"></div>
+    </section>
+  </main>
+</div>
+<div id="printArea"></div>
+<div class="page-flash" id="pageFlash"></div>
+
+<script>{{LIB_DOCX}}</script>
+<script>{{LIB_JSPDF}}</script>
+<script>{{LIB_H2C}}</script>
+<script>
+"use strict";
+/* ================================================================
+   ค่าเริ่มต้น
+   - เพิ่มประเภทปกใหม่: เพิ่มรายการใน DEFAULT_TYPES (หรือเพิ่มผ่านหน้า "ตั้งค่า")
+   - เพิ่มเอกสารชนิดใหม่ในอนาคต: สร้าง section + ปุ่มใน nav แล้วใช้ settings เดิม
+   ================================================================ */
+const STORE_KEY = "schoolFinance.settings.v2";
+const FONT = "TH SarabunPSK";
+const HEADER_15Y = "(เงินอุดหนุนการจัดการศึกษาเรียนฟรี 15 ปี)";
+const DEFAULT_TYPES = [
+  { id: "t-teach",  header: HEADER_15Y, title: "ทะเบียนคุมเงินนอกงบประมาณ", type: "เงินค่าจัดการเรียนการสอน", registerName: "ค่าจัดการเรียนการสอน (เรียนฟรี 15 ปี)", checked: true },
+];
+const DEFAULT_SIZES = { header: 26, title: 54, type: 42, fy: 42, school: 40, office: 32 };
+const SIZE_LABELS = { header: "หัวมุมขวา", title: "ชื่อทะเบียน", type: "ประเภท", fy: "ปีงบประมาณ", school: "ชื่อโรงเรียน", office: "สังกัด" };
+const DEFAULTS = {
+  school: "โรงเรียนบ้านโพนเดื่อโนนสวรรค์",
+  office: "สำนักงานเขตพื้นที่การศึกษาประถมศึกษาร้อยเอ็ด เขต 2",
+  fyAuto: true,
+  fy: null,
+  types: DEFAULT_TYPES,
+  sizes: DEFAULT_SIZES,
+  selected: "t-teach",
+  signers: 2, accName: "", accPos: "เจ้าหน้าที่บัญชี",
+  officerName: "", officerPos: "เจ้าหน้าที่การเงิน", dirName: "", dirPos: "",
+  regRows: 12, regSpacer: true, signDateOn: true, skipWeekend: true,
+};
+
+/* ปีงบประมาณ พ.ศ.: 1 ต.ค. – 30 ก.ย.  เช่น พ.ย. 2569 (2026) => 2570 */
+function autoFiscalYear(d = new Date()) {
+  return d.getFullYear() + 543 + (d.getMonth() >= 9 ? 1 : 0);
+}
+const clone = o => JSON.parse(JSON.stringify(o));
+function loadSettings() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) {}
+  s = Object.assign(clone(DEFAULTS), s || {});
+  s.sizes = Object.assign(clone(DEFAULT_SIZES), s.sizes || {});
+  if (!Array.isArray(s.types) || !s.types.length) s.types = clone(DEFAULT_TYPES);
+  s.types.forEach(t => { if (t.registerName === undefined) { const d = DEFAULT_TYPES.find(x => x.id === t.id); t.registerName = d ? d.registerName : (t.type || "").replace(/^เงิน/, ""); } });
+  return s;
+}
+function saveSettingsStore() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {}
+}
+let S = loadSettings();
+const fiscalYear = () => (S.fyAuto || !S.fy) ? autoFiscalYear() : Number(S.fy);
+
+/* ================================================================
+   แบบปก (ใช้ร่วมกันทั้งหน้าจอ, PDF และ Word)
+   top = ระยะจากขอบบนถึงบรรทัด (mm), align = ตำแหน่ง
+   ================================================================ */
+function coverLines(t, all) {
+  const z = S.sizes;
+  const lines = [
+    { key: "header", text: t.header,                       size: z.header, top: 8,   align: "right" },
+    { key: "title",  text: t.title,                        size: z.title,  top: 42,  align: "center" },
+    { key: "type",   text: "ประเภท " + t.type,              size: z.type,   top: 64,  align: "center" },
+    { key: "fy",     text: "ปีงบประมาณ " + fiscalYear(),     size: z.fy,     top: 118, align: "center" },
+    { key: "school", text: S.school,                       size: z.school, top: 152, align: "center" },
+    { key: "office", text: S.office,                       size: z.office, top: 171, align: "center" },
+  ].filter(l => !(l.key === "header" && t.showHeader === false));   // ปิด/เปิดหัวมุมขวาได้
+  if (all) return lines;
+  return lines.filter(l => (l.text || "").trim() !== "" && !(l.key === "type" && !(t.type || "").trim()));
+}
+/* ข้อความบนปกที่แก้ได้ (คลิกบนปกแล้วพิมพ์) */
+const COVER_EDIT = {
+  header: { get: t => t.header, set: (t, v) => t.header = v, ph: "(ข้อความหัวมุมขวา)" },
+  title:  { get: t => t.title,  set: (t, v) => t.title = v,  ph: "(ชื่อทะเบียน)" },
+  type:   { get: t => t.type,   set: (t, v) => { if (!t.registerName || t.registerName === t.type) t.registerName = v; t.type = v; }, ph: "(ชื่อประเภทเงิน)", prefix: "ประเภท " },
+  school: { get: () => S.school, set: (t, v) => S.school = v, ph: "(ชื่อโรงเรียน)" },
+  office: { get: () => S.office, set: (t, v) => S.office = v, ph: "(สังกัด)" },
+};
+function pageEl(t, editable) {
+  const p = document.createElement("div");
+  p.className = "page" + (editable ? " editable" : "");
+  for (const l of coverLines(t, editable)) {
+    const d = document.createElement("div");
+    d.className = "ln " + l.align;
+    d.style.top = l.top + "mm";
+    d.style.fontSize = l.size + "pt";
+    const ed = editable && COVER_EDIT[l.key];
+    if (!ed) { d.textContent = l.text; p.appendChild(d); continue; }
+    if (ed.prefix) d.append(ed.prefix);
+    const sp = document.createElement("span");
+    sp.className = "ced"; sp.contentEditable = "true"; sp.spellcheck = false;
+    sp.dataset.ph = ed.ph; sp.dataset.k = l.key; sp.textContent = ed.get(t) || ""; sp.title = "คลิกเพื่อแก้ไข";
+    sp.addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); sp.blur(); } });
+    sp.addEventListener("paste", ev => { ev.preventDefault(); document.execCommand("insertText", false, (ev.clipboardData.getData("text/plain") || "").replace(/\s*\n\s*/g, " ")); });
+    sp.addEventListener("blur", () => {
+      const v = sp.textContent.replace(/\s+/g, " ").trim();
+      if (v === (ed.get(t) || "")) return;
+      ed.set(t, v); saveSettingsStore(); renderNav(); renderTypeList();
+      setTimeout(() => {   // วาดปกใหม่ แต่คงช่องที่ผู้ใช้คลิกต่อไว้
+        const a = document.activeElement, k = a && a.dataset && a.dataset.k;
+        renderPreview();
+        const n = k && document.querySelector('#previewScale .ced[data-k="' + k + '"]');
+        if (n) { n.focus(); const r = document.createRange(); r.selectNodeContents(n); r.collapse(false); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); }
+      }, 0);
+      flash($("msg"), "บันทึกข้อความบนปกแล้ว ✓" + (l.key === "school" || l.key === "office" ? " (ใช้กับทุกเล่ม)" : ""));
+    });
+    d.appendChild(sp); p.appendChild(d);
+  }
+  return p;
+}
+
+/* ================================================================
+   UI
+   ================================================================ */
+const $ = id => document.getElementById(id);
+function currentType() { return S.types.find(t => t.id === S.selected) || S.types[0]; }
+function exportTypes() {
+  if ($("multi").checked) {
+    const list = S.types.filter(t => t.checked);
+    return list.length ? list : [currentType()];
+  }
+  return [currentType()];
+}
+function flash(el, text, isErr) {
+  el.textContent = text;
+  el.style.background = isErr ? "#fdecea" : "";
+  el.style.color = isErr ? "#a12c1f" : "";
+  el.classList.add("show");
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), 6000);
+}
+
+function renderNav() { $("navSchool").textContent = S.school; }
+function renderFY() {
+  const fy = fiscalYear();
+  $("fyShow").innerHTML = 'พ.ศ. <span class="pill">' + fy + "</span>";
+  $("fyHint").textContent = (S.fyAuto ? "อัตโนมัติ: " : "กำหนดเอง: ") + "1 ต.ค. " + (fy - 1) + " – 30 ก.ย. " + fy;
+}
+function renderTypeList() {
+  const box = $("typeList"); box.innerHTML = "";
+  for (const t of S.types) {
+    const it = document.createElement("label");
+    it.className = "typeitem" + (t.id === S.selected ? " active" : "");
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !!t.checked;
+    cb.title = "เลือกเพื่อส่งออกหลายปกในไฟล์เดียว";
+    cb.addEventListener("click", e => { e.stopPropagation(); t.checked = cb.checked; saveSettingsStore(); });
+    const tx = document.createElement("div");
+    tx.innerHTML = "<b></b><small></small>";
+    tx.querySelector("b").textContent = t.type || "(ไม่มีประเภท)";
+    tx.querySelector("small").textContent = t.title;
+    it.append(cb, tx);
+    it.addEventListener("click", e => { if (e.target === cb) return; e.preventDefault(); S.selected = t.id; saveSettingsStore(); renderTypeList(); renderPreview(); });
+    box.appendChild(it);
+  }
+}
+function renderPreview() {
+  const sc = $("previewScale"); sc.innerHTML = "";
+  sc.appendChild(pageEl(currentType(), true));
+  fitPreview();
+  const t = currentType();
+  $("showHeader").checked = t.showHeader !== false;
+  $("showHeaderHint").textContent = t.header || "";
+  $("delBook").disabled = S.types.length <= 1;
+}
+function fitPreview() {
+  const wrap = $("previewWrap"), sc = $("previewScale"), pg = sc.firstChild;
+  if (!pg) return;
+  const avail = wrap.clientWidth - 36;
+  const k = Math.min(1, avail / pg.offsetWidth);
+  sc.style.transform = "scale(" + k + ")";
+  sc.style.height = (pg.offsetHeight * k) + "px";
+  sc.style.width = (pg.offsetWidth * k) + "px";
+}
+window.addEventListener("resize", fitPreview);
+
+function renderAll() { renderNav(); renderFY(); renderTypeList(); renderPreview(); }
+
+/* ---- navigation ---- */
+document.querySelectorAll("nav button[data-view]").forEach(b => b.addEventListener("click", () => {
+  showView(b.dataset.view);
+}));
+
+/* ---- settings form ---- */
+let draftTypes = [];
+function fillSettingsForm() {
+  $("sSchool").value = S.school;
+  $("sOffice").value = S.office;
+  $("sFyAuto").checked = S.fyAuto;
+  $("sFy").value = fiscalYear();
+  $("sFy").disabled = S.fyAuto;
+  draftTypes = clone(S.types);
+  renderTypeRows();
+  fillSignTable();
+  $("sAccName").value = S.accName || ""; $("sAccPos").value = S.accPos || "";
+  $("sOfficerName").value = S.officerName || ""; $("sOfficerPos").value = S.officerPos || "";
+  $("sDirName").value = S.dirName || ""; $("sDirPos").value = S.dirPos || ""; $("sRows").value = S.regRows || 12;
+  $("sDateOn").checked = S.signDateOn !== false; $("sSkipWknd").checked = S.skipWeekend !== false;
+  const row = $("sizeRow"); row.innerHTML = "";
+  for (const k of Object.keys(DEFAULT_SIZES)) {
+    const f = document.createElement("div"); f.className = "field"; f.style.minWidth = "120px"; f.style.maxWidth = "160px";
+    f.innerHTML = '<label></label><input type="number" min="8" max="96">';
+    f.querySelector("label").textContent = SIZE_LABELS[k];
+    const inp = f.querySelector("input"); inp.value = S.sizes[k]; inp.dataset.k = k;
+    row.appendChild(f);
+  }
+}
+function renderTypeRows() {
+  const tb = $("typeRows"); tb.innerHTML = "";
+  draftTypes.forEach((t, i) => {
+    const tr = document.createElement("tr");
+    for (const k of ["header", "title", "type", "registerName"]) {
+      const td = document.createElement("td");
+      const inp = document.createElement("input"); inp.type = "text"; inp.value = t[k] || "";
+      inp.addEventListener("input", () => t[k] = inp.value);
+      td.appendChild(inp); tr.appendChild(td);
+    }
+    const tdA = document.createElement("td"), sa = document.createElement("select");
+    sa.innerHTML = '<option value="bank">เงินฝากธนาคาร</option><option value="cash">เงินสด</option><option value="gov">เงินฝากส่วนราชการผู้เบิก</option>';
+    sa.value = t.defaultAcct || "bank"; sa.addEventListener("change", () => t.defaultAcct = sa.value);
+    tdA.appendChild(sa); tr.appendChild(tdA);
+    const td = document.createElement("td");
+    const del = document.createElement("button"); del.className = "btn danger"; del.textContent = "ลบ";
+    del.disabled = draftTypes.length <= 1;
+    del.addEventListener("click", () => { draftTypes.splice(i, 1); renderTypeRows(); });
+    td.appendChild(del); tr.appendChild(td);
+    tb.appendChild(tr);
+  });
+}
+const SIGN_LABEL = { acc: "เจ้าหน้าที่บัญชี", fin: "เจ้าหน้าที่การเงิน", dir: "ผู้อำนวยการ" };
+function signOrder() { const o = Array.isArray(S.signOrder) && S.signOrder.length === 3 ? S.signOrder : ["acc", "fin", "dir"]; return o; }
+function signUse() { return S.signUse || { acc: S.signers === 3, fin: true, dir: true }; }
+function fillSignTable() {
+  const tb = $("signRows"), use = signUse();
+  signOrder().forEach(k => { const tr = tb.querySelector('tr[data-key="' + k + '"]'); tr.querySelector(".use").checked = !!use[k]; tb.appendChild(tr); });
+  refreshSignTable();
+}
+function refreshSignTable() {
+  const rows = [...$("signRows").rows];
+  rows.forEach((tr, i) => {
+    tr.querySelector(".ord").textContent = i + 1;
+    const mv = tr.querySelector(".mv"); mv.innerHTML = "";
+    const up = document.createElement("button"); up.className = "btn"; up.textContent = "▲"; up.title = "เลื่อนไปทางซ้าย"; up.disabled = i === 0;
+    const dn = document.createElement("button"); dn.className = "btn"; dn.textContent = "▼"; dn.title = "เลื่อนไปทางขวา"; dn.disabled = i === rows.length - 1;
+    up.onclick = () => { tr.parentNode.insertBefore(tr, tr.previousElementSibling); refreshSignTable(); };
+    dn.onclick = () => { tr.parentNode.insertBefore(tr.nextElementSibling, tr); refreshSignTable(); };
+    up.style.padding = dn.style.padding = "2px 8px"; mv.append(up, dn);
+    tr.style.opacity = tr.querySelector(".use").checked ? 1 : .5;
+  });
+  const used = rows.filter(tr => tr.querySelector(".use").checked).map(tr => SIGN_LABEL[tr.dataset.key]);
+  $("signPreview").textContent = "ลำดับในเอกสาร (ซ้าย → ขวา): " + (used.length ? used.join("  |  ") : "ไม่มีผู้ลงนาม");
+}
+$("signRows").addEventListener("change", ev => { if (ev.target.classList.contains("use")) refreshSignTable(); });
+$("sFyAuto").addEventListener("change", () => {
+  $("sFy").disabled = $("sFyAuto").checked;
+  if ($("sFyAuto").checked) $("sFy").value = autoFiscalYear();
+});
+$("addType").addEventListener("click", () => {
+  draftTypes.push({ id: "t-" + Date.now(), header: HEADER_15Y, title: "ทะเบียนคุมเงินนอกงบประมาณ", type: "", registerName: "", checked: false });
+  renderTypeRows();
+});
+$("resetTypes").addEventListener("click", () => {
+  if (confirm("คืนค่าประเภทปกเป็นค่าเริ่มต้น? (ประเภทที่เพิ่มเองจะหายไปเมื่อกดบันทึก)")) { draftTypes = clone(DEFAULT_TYPES); renderTypeRows(); }
+});
+$("saveSettings").addEventListener("click", () => {
+  S.school = $("sSchool").value.trim();
+  S.office = $("sOffice").value.trim();
+  S.fyAuto = $("sFyAuto").checked;
+  const fy = parseInt($("sFy").value, 10);
+  if (!S.fyAuto) {
+    if (!(fy >= 2500 && fy <= 2700)) { flash($("msgSettings"), "กรุณาใส่ปีงบประมาณเป็น พ.ศ. เช่น " + autoFiscalYear(), true); return; }
+    S.fy = fy;
+  }
+  S.types = draftTypes.filter(t => (t.title || t.type || t.header || "").trim());
+  if (!S.types.length) S.types = clone(DEFAULT_TYPES);
+  if (!S.types.some(t => t.id === S.selected)) S.selected = S.types[0].id;
+  document.querySelectorAll("#sizeRow input").forEach(inp => {
+    const v = parseFloat(inp.value); if (v >= 8 && v <= 96) S.sizes[inp.dataset.k] = v;
+  });
+  const sRows = [...$("signRows").rows];
+  S.signOrder = sRows.map(tr => tr.dataset.key);
+  S.signUse = Object.fromEntries(sRows.map(tr => [tr.dataset.key, tr.querySelector(".use").checked]));
+  S.accName = $("sAccName").value.trim(); S.accPos = $("sAccPos").value.trim();
+  S.officerName = $("sOfficerName").value.trim(); S.officerPos = $("sOfficerPos").value.trim();
+  S.dirName = $("sDirName").value.trim(); S.dirPos = $("sDirPos").value.trim();
+  S.signDateOn = $("sDateOn").checked; S.skipWeekend = $("sSkipWknd").checked;
+  const rr = parseInt($("sRows").value, 10); if (rr >= 5 && rr <= 14) S.regRows = rr;
+  saveSettingsStore(); renderNav(); fillSettingsForm();
+  flash($("msgSettings"), "บันทึกแล้ว ✓ ปีงบประมาณที่ใช้: " + fiscalYear());
+});
+$("resetAll").addEventListener("click", () => {
+  if (!confirm("คืนค่าตั้งค่าทั้งหมดเป็นค่าเริ่มต้น?")) return;
+  S = clone(DEFAULTS); saveSettingsStore(); renderNav(); fillSettingsForm();
+  flash($("msgSettings"), "คืนค่าเริ่มต้นแล้ว");
+});
+$("showHeader").addEventListener("change", () => { currentType().showHeader = $("showHeader").checked; saveSettingsStore(); renderPreview(); });
+$("addBook").addEventListener("click", () => {
+  const name = (prompt("ชื่อประเภทเงินของเล่มใหม่ (เช่น ค่าหนังสือเรียน, ค่าอาหารกลางวัน)") || "").trim();
+  if (!name) return;
+  const t = { id: "t-" + Date.now(), header: HEADER_15Y, title: "ทะเบียนคุมเงินนอกงบประมาณ", type: name, registerName: name, checked: false, showHeader: true, defaultAcct: "bank" };
+  S.types.push(t); S.selected = t.id; saveSettingsStore(); renderTypeList(); renderPreview();
+  flash($("msg"), "เพิ่มเล่ม \"" + name + "\" แล้ว ✓ คลิกที่ข้อความบนปกเพื่อแก้ไขได้ และกรอกรายการได้ที่เมนูทะเบียนคุมเงิน");
+});
+$("delBook").addEventListener("click", () => {
+  if (S.types.length <= 1) return;
+  const t = currentType();
+  const has = typeof L !== "undefined" && L[t.id] && Object.values(L[t.id]).some(b => b.entries && b.entries.length);
+  if (!confirm("ลบเล่ม \"" + (t.type || t.title) + "\" ?" + (has ? "\n\n(เล่มนี้มีรายการในทะเบียนอยู่ ข้อมูลรายการจะยังเก็บไว้ในไฟล์สำรอง แต่จะไม่แสดงในโปรแกรม)" : ""))) return;
+  S.types = S.types.filter(x => x !== t); S.selected = S.types[0].id; saveSettingsStore(); renderTypeList(); renderPreview();
+  flash($("msg"), "ลบเล่มแล้ว");
+});
+$("selAll").addEventListener("click", () => { S.types.forEach(t => t.checked = true); saveSettingsStore(); renderTypeList(); });
+$("selNone").addEventListener("click", () => { S.types.forEach(t => t.checked = false); saveSettingsStore(); renderTypeList(); });
+
+/* ================================================================
+   ส่งออก
+   ================================================================ */
+function fileBase(list) {
+  const name = list.length === 1 ? "ปก_" + (list[0].type || list[0].title) : "ปกทะเบียน_" + list.length + "ปก";
+  return (name + "_" + fiscalYear()).replace(/[\\/:*?"<>|\s]+/g, "_");
+}
+function download(blob, name) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+async function busy(btn, fn, msgEl) {
+  const old = btn.textContent; btn.disabled = true; btn.textContent = "กำลังสร้าง…";
+  try { await fn(); } catch (e) { console.error(e); flash(msgEl || $("msg"), "เกิดข้อผิดพลาด: " + e.message, true); }
+  finally { btn.disabled = false; btn.textContent = old; }
+}
+
+/* ---- Word: ใช้ตำแหน่ง/ขนาดเดียวกับหน้าจอ (mm -> twip) ---- */
+const MM = 56.6929; // twip ต่อ mm
+async function buildDocx(list, onlySections) {
+  const d = window.docx;
+  const LINE = 1.2; // ระยะบรรทัดของ TH SarabunPSK ใน Word ประมาณ 1.2 เท่าของขนาดตัวอักษร (exact)
+  const sections = list.map(t => {
+    const children = []; let y = 0; const topMargin = 10;
+    const lines = coverLines(t);
+    lines.forEach((l, i) => {
+      const lineTw = Math.round(l.size * 20 * LINE);
+      // ให้ด้านบนของตัวอักษรตรงกับตำแหน่งบนหน้าจอ
+      const targetTw = Math.round((l.top - topMargin) * MM - (l.size * 20 * (LINE - 1)) / 2 - l.size * 20 * 0.05);
+      const before = Math.max(0, targetTw - y);
+      children.push(new d.Paragraph({
+        alignment: l.align === "right" ? d.AlignmentType.RIGHT : l.align === "left" ? d.AlignmentType.LEFT : d.AlignmentType.CENTER,
+        spacing: { before, after: 0, line: lineTw, lineRule: d.LineRuleType.EXACT },
+        children: [new d.TextRun({ text: l.text, bold: true, size: Math.round(l.size * 2), font: { ascii: FONT, hAnsi: FONT, cs: FONT, eastAsia: FONT }, sizeComplexScript: Math.round(l.size * 2), boldComplexScript: true })],
+      }));
+      y += before + lineTw;
+    });
+    return {
+      properties: { page: {
+        size: { width: 11906, height: 16838, orientation: d.PageOrientation.LANDSCAPE },
+        margin: { top: Math.round(topMargin * MM), bottom: Math.round(10 * MM), left: Math.round(25 * MM), right: Math.round(25 * MM), header: 0, footer: 0 },
+      } },
+      children,
+    };
+  });
+  if (onlySections) return sections;
+  const doc = new d.Document({
+    creator: S.school, title: "ปกทะเบียนคุมเงิน", language: "th-TH",
+    styles: { default: { document: { run: { font: { ascii: FONT, hAnsi: FONT, cs: FONT, eastAsia: FONT }, size: 32, sizeComplexScript: 32 } } } },
+    sections,
+  });
+  return d.Packer.toBlob(doc);
+}
+
+/* ---- PDF: วาดหน้าจริงด้วยฟอนต์ TH SarabunPSK ความละเอียดสูง แล้วใส่ลง A4 แนวนอน ---- */
+async function buildPdf(list) {
+  await document.fonts.ready;
+  const host = document.createElement("div");
+  host.style.cssText = "position:fixed;left:-10000px;top:0";
+  document.body.appendChild(host);
+  try {
+    const pdf = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
+    pdf.setProperties({ title: "ปกทะเบียนคุมเงิน", creator: S.school });
+    for (let i = 0; i < list.length; i++) {
+      const pg = pageEl(list[i]); pg.style.boxShadow = "none";
+      host.innerHTML = ""; host.appendChild(pg);
+      const canvas = await html2canvas(pg, { scale: 4, backgroundColor: "#ffffff", logging: false });
+      if (i) pdf.addPage("a4", "landscape");
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, 297, 210, undefined, "FAST");
+    }
+    return pdf.output("blob");
+  } finally { host.remove(); }
+}
+
+$("btnDocx").addEventListener("click", e => busy(e.currentTarget, async () => {
+  const list = exportTypes();
+  download(await buildDocx(list), fileBase(list) + ".docx");
+  flash($("msg"), "สร้างไฟล์ Word แล้ว (" + list.length + " หน้า) — เครื่องที่เปิดควรมีฟอนต์ TH SarabunPSK");
+}));
+$("btnPdf").addEventListener("click", e => busy(e.currentTarget, async () => {
+  const list = exportTypes();
+  download(await buildPdf(list), fileBase(list) + ".pdf");
+  flash($("msg"), "สร้างไฟล์ PDF แล้ว (" + list.length + " หน้า)");
+}));
+$("btnPrint").addEventListener("click", () => {
+  const pa = $("printArea"); pa.innerHTML = "";
+  exportTypes().forEach(t => pa.appendChild(pageEl(t)));
+  document.fonts.ready.then(() => window.print());
+});
+
+/* เปิดโปรแกรม: ถ้าข้ามวันที่ 1 ต.ค. ปีงบประมาณอัตโนมัติจะเปลี่ยนเอง */
+document.fonts.ready.then(renderAll);
+renderAll();
+window.__app = { buildDocx, buildPdf, coverLines, autoFiscalYear, get settings() { return S; } };
+</script>
+<script>
+"use strict";
+/* ================================================================
+   ทะเบียนคุมเงิน (หน้าภายในเล่ม)
+   ข้อมูล: L[typeId][fy] = { opening:{bank,cash,gov} (สตางค์), entries:[...] }
+   entry  = { id, date:"YYYY-MM-DD" (ค.ศ.), doc, desc, kind:"rec"|"pay" (ข้อมูลเก่า "vou"/"deb" = จ่าย), amt (สตางค์), acct:"bank"|"cash"|"gov", note }
+   ================================================================ */
+const LEDGER_KEY = "schoolFinance.ledger.v1";
+const ACCTS = ["cash", "bank", "gov"];                 // ลำดับคอลัมน์คงเหลือ
+const ACCT_NAME = { cash: "เงินสด", bank: "เงินฝากธนาคาร", gov: "เงินฝากส่วนราชการผู้เบิก" };
+const KIND_NAME = { rec: "รับ", pay: "จ่าย", vou: "จ่าย", deb: "จ่าย" };
+const isPay = e => e.kind !== "rec";
+const TH_MONTHS = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+const TH_MON_S = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+
+let L = {};
+try { L = JSON.parse(localStorage.getItem(LEDGER_KEY)) || {}; } catch (e) { L = {}; }
+/* ---- ย้อนกลับ / ทำซ้ำ (Ctrl+Z / Ctrl+Y): เก็บสำเนาข้อมูลก่อนทุกการบันทึก ---- */
+const UNDO = [], REDO = [], UNDO_MAX = 200;
+let lastSavedJson = JSON.stringify(L);
+function writeLedger(json) { try { localStorage.setItem(LEDGER_KEY, json); } catch (e) { alert("บันทึกข้อมูลไม่สำเร็จ: " + e.message); } }
+function saveLedger() {
+  const json = JSON.stringify(L);
+  if (json === lastSavedJson) return;
+  UNDO.push(lastSavedJson); if (UNDO.length > UNDO_MAX) UNDO.shift();
+  REDO.length = 0; lastSavedJson = json; writeLedger(json); updateUndoBtns();
+}
+function undoRedo(from, to) {
+  if (!from.length) return false;
+  to.push(lastSavedJson); lastSavedJson = from.pop(); L = JSON.parse(lastSavedJson); writeLedger(lastSavedJson);
+  updateUndoBtns(); return true;
+}
+function updateUndoBtns() {
+  const u = document.getElementById("rUndo"), r = document.getElementById("rRedo");
+  if (u) u.disabled = !UNDO.length; if (r) r.disabled = !REDO.length;
+}
+const zero = () => ({ cash: 0, bank: 0, gov: 0 });
+function book(typeId, fy, create) {
+  const b = L[typeId] && L[typeId][fy];
+  if (b || !create) return b || { opening: zero(), entries: [] };
+  L[typeId] = L[typeId] || {};
+  return (L[typeId][fy] = { opening: zero(), entries: [] });
+}
+const bookUsed = b => !!b && (b.entries.length > 0 || ACCTS.some(a => b.opening[a]));
+
+/* ---- เดือนในปีงบประมาณ: index 0 = ต.ค. ... 11 = ก.ย. ---- */
+const calMonth = mi => (mi + 9) % 12 + 1;                    // 1..12
+const ceYear = (fy, mi) => fy - 543 - (mi < 3 ? 1 : 0);      // ต.ค.–ธ.ค. อยู่ปี พ.ศ. ก่อนหน้า
+const beYear = (fy, mi) => ceYear(fy, mi) + 543;
+const monthIdx = dateStr => (Number(dateStr.slice(5, 7)) + 2) % 12;
+const daysIn = (fy, mi) => new Date(ceYear(fy, mi), calMonth(mi), 0).getDate();
+function currentMonthIdx() { return (new Date().getMonth() + 1 + 2) % 12; }
+function thDate(dateStr) { const [y, m, d] = dateStr.split("-").map(Number); return d + "/" + m + "/" + (y + 543); }
+
+/* ---- เงิน (เก็บเป็นสตางค์) ---- */
+function parseMoney(v) {
+  const s = String(v || "").replace(/[,\s฿บาท]/g, "");
+  if (s === "") return 0;
+  const n = Number(s);
+  return isFinite(n) ? Math.round(n * 100) : NaN;
+}
+const fmt = s => (s / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtNZ = s => s ? fmt(s) : "";
+function applyEntry(bal, e) { bal[e.acct] += (e.kind === "rec" ? 1 : -1) * e.amt; }
+
+/* ---- ยอดยกมา ---- */
+function openingIsAuto(typeId, fy) { return bookUsed(L[typeId] && L[typeId][fy - 1]); }
+function fyOpening(typeId, fy, depth = 0) {
+  if (depth < 60 && openingIsAuto(typeId, fy)) return fyClosing(typeId, fy - 1, depth + 1);
+  return Object.assign(zero(), book(typeId, fy).opening);
+}
+/* เรียงตามเดือน แล้วตามลำดับที่กรอกในตาราง (ผู้ใช้จัดลำดับเองได้) */
+function sortedEntries(b) { return b.entries.slice().sort((x, y) => (monthIdx(x.date) - monthIdx(y.date)) || ((x.seq || 0) - (y.seq || 0))); }
+function fyClosing(typeId, fy, depth = 0) {
+  const bal = fyOpening(typeId, fy, depth);
+  book(typeId, fy).entries.forEach(e => applyEntry(bal, e));
+  return bal;
+}
+/* บัญชีเริ่มต้นของแต่ละเล่ม (ตั้งในหน้าทะเบียนหรือหน้าตั้งค่า) */
+function defAcct(typeId) { const t = S.types.find(x => x.id === typeId); return (t && ACCTS.includes(t.defaultAcct)) ? t.defaultAcct : "bank"; }
+function monthData(typeId, fy, mi) {
+  const b = book(typeId, fy);
+  const bal = fyOpening(typeId, fy);
+  const cum = { rec: 0, pay: 0 }, sum = { rec: 0, pay: 0 };
+  const rows = [];
+  let opening = null;
+  for (const e of sortedEntries(b)) {
+    const idx = monthIdx(e.date);
+    if (idx > mi) continue;
+    if (idx === mi && !opening) opening = Object.assign({}, bal);
+    applyEntry(bal, e); cum[isPay(e) ? "pay" : "rec"] += e.amt;
+    if (idx === mi) { sum[isPay(e) ? "pay" : "rec"] += e.amt; rows.push({ e, bal: Object.assign({}, bal) }); }
+  }
+  if (!opening) opening = Object.assign({}, bal);
+  return { opening, rows, sum, cum, closing: Object.assign({}, bal), def: defAcct(typeId) };
+}
+/* วันที่ลงนาม: วันสุดท้ายของเดือน ถ้าตรงเสาร์-อาทิตย์เลื่อนเป็นวันศุกร์ (ปิดได้ในตั้งค่า) หรือวันที่ที่แก้เอง */
+function autoSignDay(fy, mi) {
+  let d = daysIn(fy, mi);
+  if (S.skipWeekend !== false) while ([0, 6].includes(new Date(ceYear(fy, mi), calMonth(mi) - 1, d).getDay())) d--;
+  return d;
+}
+function signDay(typeId, fy, mi) {
+  const b = L[typeId] && L[typeId][fy], o = b && b.signDays && b.signDays[mi];
+  return o ? { day: o, auto: false } : { day: autoSignDay(fy, mi), auto: true };
+}
+function carryText(fy, mi) { return mi === 0 ? "ยอดยกมาจากปีงบประมาณ " + (fy - 1) : "ยอดยกมาจากเดือน" + TH_MONTHS[calMonth(mi - 1) - 1]; }
+
+/* ================================================================
+   แบบหน้าทะเบียน (ใช้ร่วมกันทั้งจอ, PDF และ Word)
+   ================================================================ */
+const COLS_MM = [23, 34, 61, 26, 26, 17, 27, 25, 28];   // รวม 267 มม. (ที่เอกสารกว้างขึ้น หมายเหตุแคบลง)
+const NCOL = 9;
+function balCells(bal, force, def) {
+  const any = ACCTS.some(a => bal[a]);
+  return ACCTS.map(a => (bal[a] || a === force || (!any && a === (def || "bank"))) ? fmt(bal[a]) : "");
+}
+/* ---- ตัดข้อความตามความกว้างช่อง (วัดด้วยฟอนต์ TH SarabunPSK 16pt เหมือนตอนพิมพ์) ---- */
+let _measureCtx = null;
+function textPx(t, bold) {
+  if (!_measureCtx) _measureCtx = document.createElement("canvas").getContext("2d");
+  _measureCtx.font = (bold ? "bold " : "") + "16pt '" + FONT + "'";
+  return _measureCtx.measureText(t).width;
+}
+const colPx = c => (COLS_MM[c] - 2.6) * 96 / 25.4;   // หักขอบเซลล์ซ้าย-ขวา
+const _seg = (typeof Intl !== "undefined" && Intl.Segmenter) ? new Intl.Segmenter("th", { granularity: "word" }) : null;
+function wrapText(text, c, bold) {
+  text = String(text || ""); const max = colPx(c);
+  if (!text || textPx(text, bold) <= max) return [text];
+  const raw = _seg ? [..._seg.segment(text)].map(x => x.segment) : [...text];
+  /* ไม่ตัดกลางตัวเลข/วันที่/คำย่อ เช่น 1-6, 15/2569, พ.ย. และเครื่องหมายวรรคตอนติดคำหน้า */
+  const TH = /[\u0E00-\u0E7F]/, SP = /\s/, PUNCT = /^[.,:;!?)\]\/%\-–]/;
+  const parts = [];
+  for (const g of raw) {
+    const prev = parts[parts.length - 1];
+    if (prev !== undefined) {
+      const a = prev.slice(-1), b = g[0];
+      const glue = (!SP.test(a) && !SP.test(b) && !TH.test(a) && !TH.test(b)) || (!SP.test(a) && PUNCT.test(g)) || /[(\[\/\-.]$/.test(prev) && !SP.test(b);
+      if (glue) { parts[parts.length - 1] = prev + g; continue; }
+    }
+    parts.push(g);
+  }
+  const out = []; let cur = "";
+  for (let p of parts) {
+    if (textPx(cur + p, bold) <= max) { cur += p; continue; }
+    if (cur.trim()) { out.push(cur.replace(/\s+$/, "")); cur = ""; p = p.replace(/^\s+/, ""); }
+    while (p && textPx(p, bold) > max) {   // คำเดียวยาวเกินช่อง: ตัดทีละตัวอักษร
+      let k = p.length; while (k > 1 && textPx(p.slice(0, k), bold) > max) k--;
+      out.push(p.slice(0, k)); p = p.slice(k);
+    }
+    cur = p;
+  }
+  if (cur || !out.length) out.push(cur);
+  return out;
+}
+const wrapLines = (lines, c) => lines.flatMap(l => wrapText(l, c));
+const fieldLines = (e, f) => { const a = String(e[f] || "").split("\n"); return a.length ? a : [""]; };
+function registerLines(md, fy, mi, spacer) {
+  const lines = [];
+  const blank = () => ({ c: Array(NCOL).fill(""), blank: true });
+  lines.push({ c: ["1/" + calMonth(mi) + "/" + beYear(fy, mi), "", carryText(fy, mi), "", "", ...balCells(md.opening, null, md.def), ""], bold: true });
+  for (const { e, bal } of md.rows) {
+    if (spacer) lines.push(blank());
+    const desc = wrapLines((e.desc || "").split("\n").map(s => s.trim()).filter((s, i) => s || i === 0), 2);
+    const doc = wrapLines(fieldLines(e, "doc"), 1), note = wrapLines(fieldLines(e, "note"), 8);   // ยาวเกินช่อง = ลงบรรทัดถัดไป
+    const n = Math.max(desc.length, doc.length, note.length);
+    lines.push({ c: [thDate(e.date), doc[0] || "", desc[0] || "",
+      e.kind === "rec" && e.amt ? fmt(e.amt) : "", isPay(e) && e.amt ? fmt(e.amt) : "",
+      ...balCells(bal, e.acct), note[0] || ""] });
+    for (let k = 1; k < n; k++) lines.push({ c: ["", doc[k] || "", desc[k] || "", "", "", "", "", "", note[k] || ""] });
+  }
+  return lines;
+}
+/* แบ่งหน้า: หน้าสุดท้ายมี R บรรทัด + แถวรวม + ลายเซ็น, หน้าก่อนหน้าใส่ได้ R+7 บรรทัด */
+function paginate(lines, R) {
+  const pages = [];
+  let rest = lines.slice();
+  while (rest.length > R) { pages.push(rest.splice(0, R + 7)); }
+  const last = rest;
+  while (last.length < R) last.push({ c: Array(NCOL).fill(""), blank: true });
+  pages.push(last);
+  return pages;
+}
+function regType(typeId) { return S.types.find(t => t.id === typeId) || S.types[0]; }
+function registerPages(typeId, fy, mi, spacer) {
+  const t = regType(typeId);
+  const md = monthData(typeId, fy, mi);
+  const R = Math.min(14, Math.max(5, Number(S.regRows) || 12));
+  const chunks = paginate(registerLines(md, fy, mi, spacer), R);
+  const header = [t.title || "ทะเบียนคุมเงินนอกงบประมาณ", "ประจำปีงบประมาณ  " + fy, "ประเภท  " + (t.registerName || t.type || ""), S.school];
+  const sd = signDay(typeId, fy, mi);
+  const dateLine = "วันที่ " + sd.day + " เดือน " + TH_MONTHS[calMonth(mi) - 1] + " พ.ศ. " + beYear(fy, mi);
+  const dots = "......................................................";
+  const SIGNERS = {
+    acc: ["ลงชื่อ" + dots, "(" + (S.accName || dots) + ")", S.accPos || "เจ้าหน้าที่บัญชี"],
+    fin: ["ลงชื่อ" + dots, "(" + (S.officerName || dots) + ")", S.officerPos || "เจ้าหน้าที่การเงิน"],
+    dir: ["ลงชื่อ" + dots, "(" + (S.dirName || dots) + ")", S.dirPos || ("ผู้อำนวยการ" + S.school)],
+  };
+  const use = signUse();
+  const dateOn = S.signDateOn !== false;
+  const sign = signOrder().filter(k => use[k]).map(k => dateOn ? [...SIGNERS[k], dateLine] : SIGNERS[k]);   // เรียงซ้าย → ขวา ตามที่ตั้งไว้
+  const footer = [
+    { label: "รวมเดือนนี้", c: [fmtNZ(md.sum.rec), fmtNZ(md.sum.pay), ...balCells(md.closing, null, md.def), ""] },
+    { label: "รวมตั้งแต่ต้นปี", c: [fmtNZ(md.cum.rec), fmtNZ(md.cum.pay), "", "", "", ""] },
+    { label: "ยอดยกไป", carry: true, c: ["", "", ...balCells(md.closing, null, md.def), ""] },
+  ];
+  return chunks.map((rows, i) => ({ header, rows, last: i === chunks.length - 1, footer, sign, signDate: dateOn ? sd : null, pageNo: i + 1, pageCount: chunks.length }));
+}
+
+/* ---- HTML ---- */
+const NUMCOL = c => c >= 3 && c <= 7;
+function regPageEl(pg) {
+  const p = document.createElement("div"); p.className = "page reg";
+  const inner = document.createElement("div"); inner.className = "inner"; p.appendChild(inner);
+  for (const h of pg.header) { const d = document.createElement("div"); d.className = "hd"; d.textContent = h; inner.appendChild(d); }
+  const tb = document.createElement("table"); tb.className = "rt";
+  tb.innerHTML = "<colgroup>" + COLS_MM.map(w => '<col style="width:' + w + 'mm">').join("") + "</colgroup>" +
+    '<thead><tr class="h1"><th rowspan="2">วัน เดือน ปี</th><th rowspan="2">ที่เอกสาร</th><th rowspan="2">รายการ</th><th rowspan="2">รับ</th><th rowspan="2">จ่าย</th><th colspan="3">คงเหลือ</th><th rowspan="2">หมายเหตุ</th></tr>' +
+    '<tr class="h2"><th>เงินสด</th><th>เงินฝากธนาคาร</th><th>เงินฝากส่วน<br>ราชการผู้เบิก</th></tr></thead>';
+  const body = document.createElement("tbody");
+  const td = (txt, cls, attrs) => { const c = document.createElement("td"); if (cls) c.className = cls; c.textContent = txt; if (attrs) for (const k in attrs) c.setAttribute(k, attrs[k]); return c; };
+  for (const r of pg.rows) {
+    const tr = document.createElement("tr"); if (r.bold) tr.className = "b";
+    r.c.forEach((v, i) => tr.appendChild(td(v, NUMCOL(i) ? "n" : i === 0 ? "c" : "")));
+    body.appendChild(tr);
+  }
+  if (pg.last) {
+    pg.footer.forEach((f, k) => {
+      const tr = document.createElement("tr");
+      if (k === 0) { tr.appendChild(td("", "", { rowspan: 3 })); tr.appendChild(td("", "", { rowspan: 3 })); }
+      tr.appendChild(td(f.label, "lab"));
+      if (f.carry) {
+        tr.appendChild(td("", "grey", { colspan: 2 }));
+        f.c.slice(2, 5).forEach(v => tr.appendChild(td(v, "n ft" + (v ? " hl" : ""))));
+        tr.appendChild(td(""));
+      } else f.c.forEach((v, i) => tr.appendChild(td(v, i < 5 ? "n ft" : "")));
+      body.appendChild(tr);
+    });
+  }
+  tb.appendChild(body); inner.appendChild(tb);
+  if (pg.last) {
+    const sg = document.createElement("div"); sg.className = "sig";
+    for (const s of pg.sign) { const col = document.createElement("div"); s.forEach(t => { const d = document.createElement("div"); d.textContent = t; col.appendChild(d); }); sg.appendChild(col); }
+    inner.appendChild(sg);
+  } else {
+    const nx = document.createElement("div"); nx.style.cssText = "text-align:right;font-size:14pt;margin-top:2mm"; nx.textContent = "(มีต่อหน้า " + (pg.pageNo + 1) + ")"; inner.appendChild(nx);
+  }
+  return p;
+}
+
+/* ---- Word ---- */
+async function buildRegisterDocx(pages, coverList) {
+  const d = window.docx;
+  const F = { ascii: FONT, hAnsi: FONT, cs: FONT, eastAsia: FONT };
+  const run = (text, size, bold) => new d.TextRun({ text, bold: !!bold, boldComplexScript: !!bold, size: size * 2, sizeComplexScript: size * 2, font: F });
+  const para = (text, o = {}) => new d.Paragraph({
+    alignment: o.align || d.AlignmentType.LEFT,
+    spacing: { before: o.before || 0, after: 0, line: Math.round((o.size || 16) * 20 * (o.lh || 1.15)), lineRule: d.LineRuleType.EXACT },
+    children: String(text).split("\n").flatMap((t, i) => i ? [new d.TextRun({ break: 1 }), run(t, o.size || 16, o.bold)] : [run(t, o.size || 16, o.bold)]),
+  });
+  const tw = mm => Math.round(mm * MM);
+  const B = { style: d.BorderStyle.SINGLE, size: 6, color: "000000" };
+  const borders = { top: B, bottom: B, left: B, right: B };
+  const NB = { style: d.BorderStyle.NONE, size: 0, color: "FFFFFF" };
+  const noBorders = { top: NB, bottom: NB, left: NB, right: NB, insideHorizontal: NB, insideVertical: NB };
+  const shade = fill => ({ fill, type: d.ShadingType.CLEAR, color: "auto" });
+  const AL = { c: d.AlignmentType.CENTER, r: d.AlignmentType.RIGHT, l: d.AlignmentType.LEFT };
+  const cell = (text, o = {}) => new d.TableCell({
+    children: [para(text, { align: AL[o.al || "l"], bold: o.bold })],
+    verticalAlign: d.VerticalAlign.CENTER, borders, rowSpan: o.rs, columnSpan: o.cs,
+    shading: o.fill ? shade(o.fill) : undefined,
+    margins: { left: tw(1), right: tw(1), top: 0, bottom: 0 },
+    width: o.w ? { size: o.w, type: d.WidthType.DXA } : undefined,
+  });
+  const row = (cells, hMM) => new d.TableRow({ children: cells, height: { value: tw(hMM), rule: d.HeightRule.EXACT }, cantSplit: true });
+  const widths = COLS_MM.map(tw);
+  const sections = pages.map(pg => {
+    const ch = [];
+    pg.header.forEach((h, i) => ch.push(para(h, { align: d.AlignmentType.CENTER, size: 18, bold: true, lh: 1.1 })));
+    const H = "E7E6E6";
+    const rows = [
+      row([cell("วัน เดือน ปี", { rs: 2, al: "c", bold: true, fill: H }), cell("ที่เอกสาร", { rs: 2, al: "c", bold: true, fill: H }), cell("รายการ", { rs: 2, al: "c", bold: true, fill: H }),
+        cell("รับ", { rs: 2, al: "c", bold: true, fill: H }), cell("จ่าย", { rs: 2, al: "c", bold: true, fill: H }), cell("คงเหลือ", { cs: 3, al: "c", bold: true, fill: H }), cell("หมายเหตุ", { rs: 2, al: "c", bold: true, fill: H })], 9),
+      row([cell("เงินสด", { al: "c", bold: true, fill: H }),
+        cell("เงินฝากธนาคาร", { al: "c", bold: true, fill: H }), cell("เงินฝากส่วน\nราชการผู้เบิก", { al: "c", bold: true, fill: H })], 13),
+    ];
+    for (const r of pg.rows) rows.push(row(r.c.map((v, i) => cell(v, { al: NUMCOL(i) ? "r" : i === 0 ? "c" : "l", bold: r.bold, w: widths[i] })), 7));
+    if (pg.last) pg.footer.forEach((f, k) => {
+      const cs = [];
+      if (k === 0) { cs.push(cell("", { rs: 3 }), cell("", { rs: 3 })); }
+      cs.push(cell(f.label, { al: "r", bold: true, fill: "EFEFEF" }));
+      if (f.carry) {
+        cs.push(cell("", { cs: 2, fill: "D9D9D9" }));
+        f.c.slice(2, 5).forEach(v => cs.push(cell(v, { al: "r", bold: true, fill: v ? "FBE5D6" : undefined })));
+        cs.push(cell(""));
+      } else f.c.forEach((v, i) => cs.push(cell(v, { al: i < 5 ? "r" : "l", bold: true })));
+      rows.push(row(cs, 7));
+    });
+    ch.push(new d.Paragraph({ spacing: { before: 0, after: 0, line: tw(2), lineRule: d.LineRuleType.EXACT }, children: [] }));
+    ch.push(new d.Table({ rows, columnWidths: widths, width: { size: widths.reduce((a, b) => a + b, 0), type: d.WidthType.DXA }, layout: d.TableLayoutType.FIXED }));
+    if (pg.last && pg.sign.length) {
+      ch.push(new d.Paragraph({ spacing: { before: 0, after: 0, line: tw(5), lineRule: d.LineRuleType.EXACT }, children: [] }));
+      const half = Math.floor(widths.reduce((a, b) => a + b, 0) / pg.sign.length);
+      ch.push(new d.Table({
+        borders: noBorders, columnWidths: pg.sign.map(() => half), width: { size: half * pg.sign.length, type: d.WidthType.DXA }, layout: d.TableLayoutType.FIXED,
+        rows: [new d.TableRow({ children: pg.sign.map(s => new d.TableCell({ borders: noBorders, width: { size: half, type: d.WidthType.DXA },
+          children: s.map(t => para(t, { align: d.AlignmentType.CENTER, size: 16, lh: 1.2 })) })) })],
+      }));
+    } else if (!pg.last) ch.push(para("(มีต่อหน้า " + (pg.pageNo + 1) + ")", { align: d.AlignmentType.RIGHT, size: 14 }));
+    return { properties: { page: { size: { width: 11906, height: 16838, orientation: d.PageOrientation.LANDSCAPE },
+      margin: { top: tw(8), bottom: tw(5), left: tw(15), right: tw(15), header: 0, footer: 0 } } }, children: ch };
+  });
+  if (coverList) sections.unshift(...await buildDocx(coverList, true));   // ทั้งเล่ม: ปกอยู่หน้าแรก
+  const doc = new d.Document({ creator: S.school, title: "ทะเบียนคุมเงิน", language: "th-TH",
+    styles: { default: { document: { run: { font: F, size: 32, sizeComplexScript: 32 } } } }, sections });
+  return d.Packer.toBlob(doc);
+}
+
+/* ---- PDF (ใช้หน้า HTML เดียวกับตัวอย่าง) ---- */
+async function pagesToPdf(els, portrait) {
+  await document.fonts.ready;
+  const host = document.createElement("div"); host.style.cssText = "position:fixed;left:-10000px;top:0"; document.body.appendChild(host);
+  try {
+    const ori = portrait ? "portrait" : "landscape", W = portrait ? 210 : 297, H = portrait ? 297 : 210;
+    const pdf = new window.jspdf.jsPDF({ orientation: ori, unit: "mm", format: "a4", compress: true });
+    for (let i = 0; i < els.length; i++) {
+      const pg = els[i]; pg.style.boxShadow = "none"; host.innerHTML = ""; host.appendChild(pg);
+      const canvas = await html2canvas(pg, { scale: 3, backgroundColor: "#ffffff", logging: false });
+      if (i) pdf.addPage("a4", ori);
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, W, H, undefined, "FAST");
+    }
+    return pdf.output("blob");
+  } finally { host.remove(); }
+}
+
+/* ================================================================
+   UI หน้าทะเบียน: ตารางกรอกแบบเดียวกับทะเบียนจริง
+   ================================================================ */
+const R = { typeId: null, fy: null, mi: null };
+function initRegisterState() {
+  if (!R.typeId || !S.types.some(t => t.id === R.typeId)) R.typeId = S.selected || S.types[0].id;
+  if (!R.fy) R.fy = fiscalYear();
+  if (R.mi === null) R.mi = (R.fy === autoFiscalYear()) ? currentMonthIdx() : 0;   // เดือนปัจจุบันอัตโนมัติ
+}
+const prevOpen = () => false;   // ตัวอย่างหน้าพิมพ์ถูกเอาออก (ตารางกรอกแสดงหน้าตาเดียวกันอยู่แล้ว)
+function renderRegister() {
+  initRegisterState();
+  const sel = $("rType"); sel.innerHTML = "";
+  S.types.forEach(t => { const o = document.createElement("option"); o.value = t.id; o.textContent = (t.registerName || t.type || t.title); sel.appendChild(o); });
+  sel.value = R.typeId;
+  $("rAcct").value = defAcct(R.typeId);
+  $("rFy").value = R.fy;
+  $("rSpacer").checked = !!S.regSpacer;
+  renderMonths(); renderSheet(); if (prevOpen()) renderRegPreview();
+}
+function renderMonths() {
+  const box = $("rMonths"); box.innerHTML = "";
+  const b = book(R.typeId, R.fy);
+  const nowFy = autoFiscalYear(), nowMi = currentMonthIdx();
+  for (let mi = 0; mi < 12; mi++) {
+    const btn = document.createElement("button");
+    const n = b.entries.filter(e => monthIdx(e.date) === mi).length;
+    btn.className = (mi === R.mi ? "active " : "") + (n ? "has " : "") + (R.fy === nowFy && mi === nowMi ? "now" : "");
+    btn.innerHTML = "<b></b><small></small>";
+    btn.querySelector("b").textContent = TH_MON_S[calMonth(mi) - 1] + " " + String(beYear(R.fy, mi)).slice(2);
+    btn.querySelector("small").textContent = n ? n + " รายการ" : "–";
+    btn.addEventListener("click", () => { R.mi = mi; renderMonths(); renderSheet(); if (prevOpen()) renderRegPreview(); });
+    box.appendChild(btn);
+  }
+}
+function renderRegPreview() {}
+
+/* ---- ช่วยคำนวณ ---- */
+const sheetLines = e => fieldLines(e, "desc");
+function monthEntries() { return sortedEntries(book(R.typeId, R.fy)).filter(e => monthIdx(e.date) === R.mi); }
+function defaultDate() {
+  const list = monthEntries();
+  if (list.length) return list[list.length - 1].date;
+  const now = new Date(), y = ceYear(R.fy, R.mi), m = calMonth(R.mi);
+  const d = (now.getFullYear() === y && now.getMonth() + 1 === m) ? now.getDate() : 1;
+  return y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+}
+function nextSeq() { return book(R.typeId, R.fy).entries.reduce((s, e) => Math.max(s, e.seq || 0), 0) + 1; }
+/* วันที่: "30" | "30/10" | "30/10/2569" | "30/10/69" */
+function parseThaiDate(str) {
+  const p = String(str).trim().split(/[\/\-. ]+/).filter(Boolean).map(Number);
+  if (!p.length || p.some(isNaN)) return { err: "วันที่ไม่ถูกต้อง (พิมพ์เช่น 30 หรือ 30/10/" + beYear(R.fy, R.mi) + ")" };
+  const d = p[0], m = p[1] || calMonth(R.mi);
+  if (m < 1 || m > 12) return { err: "เดือนไม่ถูกต้อง" };
+  const mi = (m + 2) % 12;
+  let y = p[2];
+  if (!y) y = ceYear(R.fy, mi); else if (y < 100) y = 2500 + y - 543; else if (y > 2400) y -= 543;
+  const dim = new Date(y, m, 0).getDate();
+  if (d < 1 || d > dim) return { err: "วันที่ " + d + " ไม่มีในเดือน" + TH_MONTHS[m - 1] };
+  if (y + 543 + (m >= 10 ? 1 : 0) !== R.fy) return { err: "วันที่นี้ไม่อยู่ในปีงบประมาณ " + R.fy };
+  return { date: y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"), mi };
+}
+
+/* ---- วาดตาราง ---- */
+let lastConvertedBlank = -1;
+function renderSheet(focus) {
+  closeMenu();
+  const t = regType(R.typeId);
+  const md = monthData(R.typeId, R.fy, R.mi);
+  const sh = $("sheet"); sh.innerHTML = "";
+  $("sheetTitle").textContent = "เดือน" + TH_MONTHS[calMonth(R.mi) - 1] + " " + beYear(R.fy, R.mi);
+  [t.title || "ทะเบียนคุมเงินนอกงบประมาณ", "ประจำปีงบประมาณ  " + R.fy, "ประเภท  " + (t.registerName || t.type || ""), S.school]
+    .forEach(h => { const d = document.createElement("div"); d.className = "hd"; d.textContent = h; sh.appendChild(d); });
+
+  const tb = document.createElement("table"); tb.className = "st";
+  const tot = COLS_MM.reduce((a, b) => a + b, 0);
+  tb.innerHTML = "<colgroup>" + COLS_MM.map(w => '<col style="width:' + (w / tot * 96.5).toFixed(2) + '%">').join("") + '<col style="width:3.5%"></colgroup>' +
+    '<thead><tr><th rowspan="2" style="height:40px">วัน เดือน ปี</th><th rowspan="2">ที่เอกสาร</th><th rowspan="2">รายการ</th><th rowspan="2">รับ</th><th rowspan="2">จ่าย</th><th colspan="3">คงเหลือ</th><th rowspan="2">หมายเหตุ</th><th rowspan="2" class="g"></th></tr>' +
+    '<tr><th style="height:44px">เงินสด</th><th>เงินฝากธนาคาร</th><th>เงินฝากส่วน<br>ราชการผู้เบิก</th></tr></thead>';
+  const body = document.createElement("tbody");
+  const td = (cls, text) => { const c = document.createElement("td"); if (cls) c.className = cls; if (text != null) c.textContent = text; return c; };
+  const inp = (cls, f, val, ph) => { const c = td(cls); const i = document.createElement("input"); i.dataset.f = f; i.defaultValue = i.value = val || ""; if (ph) i.placeholder = ph; c.appendChild(i); return c; };
+
+  /* แถวยอดยกมา */
+  const cr = document.createElement("tr"); cr.className = "carry"; cr.dataset.kind = "carry";
+  cr.append(td("autol c", "1/" + calMonth(R.mi) + "/" + beYear(R.fy, R.mi)), td("autol", ""), td("autol", carryText(R.fy, R.mi)), td("auto"), td("auto"));
+  const manualOpen = R.mi === 0 && !openingIsAuto(R.typeId, R.fy);
+  if (manualOpen) {
+    const o = book(R.typeId, R.fy).opening;
+    ACCTS.forEach(a => { const c = inp("n", "o-" + a, o[a] ? fmt(o[a]) : "", a === defAcct(R.typeId) ? "กรอกยอดยกมา" : ""); c.title = "ปีแรกที่ใช้โปรแกรม: กรอกยอดยกมาเองครั้งเดียว ปีต่อไปโปรแกรมยกให้อัตโนมัติ"; cr.appendChild(c); });
+  } else balCells(md.opening, null, md.def).forEach(v => cr.appendChild(td("auto", v)));
+  cr.append(td("autol", ""), td("g"));
+  body.appendChild(cr);
+
+  /* แถวรายการ */
+  let count = 1;
+  for (const { e, bal } of md.rows) {
+    const lines = sheetLines(e), dl = fieldLines(e, "doc"), nl = fieldLines(e, "note");
+    const nRows = Math.max(lines.length, dl.length, nl.length);
+    for (let li = 0; li < nRows; li++) { const ln = lines[li] || "";
+      const tr = document.createElement("tr"); tr.dataset.kind = "entry"; tr.dataset.id = e.id; tr.dataset.li = li;
+      if (li === 0) {
+        tr.append(inp("c", "date", thDate(e.date)), inp("", "doc", dl[0]), inp("", "desc", ln),
+          inp("n", "rec", e.kind === "rec" && e.amt ? fmt(e.amt) : ""), inp("n", "pay", isPay(e) && e.amt ? fmt(e.amt) : ""));
+        balCells(bal, e.acct).forEach(v => tr.appendChild(td("auto", v)));
+        tr.appendChild(inp("", "note", nl[0]));
+        const g = td("g"); const b = document.createElement("button"); b.className = "gbtn"; b.textContent = "⋮"; b.title = "เปลี่ยนบัญชี / เพิ่มบรรทัด / แทรก / ลบ"; g.appendChild(b); tr.appendChild(g);
+      } else {
+        tr.append(td("off"), inp("", "doc", dl[li]), inp("", "desc", ln, li < lines.length ? "(บรรทัดต่อ)" : ""), td("off"), td("off"), td("off"), td("off"), td("off"), inp("", "note", nl[li]), td("g"));
+      }
+      body.appendChild(tr); count++;
+    }
+  }
+  /* แถวว่างสำหรับพิมพ์รายการใหม่ */
+  const nBlank = Math.max(4, (Number(S.regRows) || 12) + 1 - count);
+  const dph = thDate(defaultDate());
+  for (let k = 0; k < nBlank; k++) {
+    const tr = document.createElement("tr"); tr.dataset.kind = "blank"; tr.dataset.idx = k;
+    tr.append(inp("c", "date", "", k === 0 ? dph : ""), inp("", "doc", ""), inp("", "desc", "", k === 0 ? "พิมพ์รายการใหม่ที่นี่…" : ""),
+      inp("n", "rec", ""), inp("n", "pay", ""), td(""), td(""), td(""), inp("", "note", ""), td("g"));
+    body.appendChild(tr);
+  }
+  /* แถวรวม (อัตโนมัติ) */
+  const foot = [
+    ["รวมเดือนนี้", [fmtNZ(md.sum.rec), fmtNZ(md.sum.pay), ...balCells(md.closing, null, md.def)]],
+    ["รวมตั้งแต่ต้นปี", [fmtNZ(md.cum.rec), fmtNZ(md.cum.pay), "", "", ""]],
+  ];
+  foot.forEach(([lab, vals], k) => {
+    const tr = document.createElement("tr");
+    if (k === 0) { const a = td(""); a.rowSpan = 3; const b = td(""); b.rowSpan = 3; tr.append(a, b); }
+    tr.appendChild(td("lab", lab)); vals.forEach(v => tr.appendChild(td("tot", v))); tr.append(td(""), td("g"));
+    body.appendChild(tr);
+  });
+  const ct = document.createElement("tr");
+  ct.appendChild(td("lab", "ยอดยกไป")); const gy = td("grey"); gy.colSpan = 2; ct.appendChild(gy);
+  balCells(md.closing, null, md.def).forEach(v => ct.appendChild(td(v ? "tot hl" : "tot", v))); ct.append(td(""), td("g"));
+  body.appendChild(ct);
+  tb.appendChild(body); sh.appendChild(tb);
+
+  /* ลายเซ็น (อัตโนมัติจากหน้าตั้งค่า) */
+  const pg = registerPages(R.typeId, R.fy, R.mi, false)[0];
+  const sg = document.createElement("div"); sg.className = "sig";
+  pg.sign.forEach(s => {
+    const col = document.createElement("div");
+    (pg.signDate ? s.slice(0, -1) : s).forEach(x => { const d = document.createElement("div"); d.textContent = x; col.appendChild(d); });
+    if (pg.signDate) {   // วันที่แก้ได้ในตาราง
+      const sd = pg.signDate, d = document.createElement("div");
+      d.append("วันที่ ");
+      const i = document.createElement("input"); i.className = "sigday"; i.value = sd.day; i.inputMode = "numeric";
+      i.title = sd.auto ? "วันที่อัตโนมัติ (คลิกเพื่อแก้)" : "แก้ไขเองแล้ว (ลบให้ว่างเพื่อกลับเป็นอัตโนมัติ)";
+      if (!sd.auto) i.classList.add("manual");
+      i.addEventListener("change", () => setSignDay(i.value));
+      d.append(i, " เดือน " + TH_MONTHS[calMonth(R.mi) - 1] + " พ.ศ. " + beYear(R.fy, R.mi));
+      col.appendChild(d);
+    }
+    sg.appendChild(col);
+  });
+  sh.appendChild(sg);
+  if (pg.signDate && !pg.signDate.auto) {
+    const n = document.createElement("div"); n.className = "sheet-tip"; n.style.textAlign = "center";
+    n.append("วันที่ลงนามเดือนนี้แก้ไขเอง • ");
+    const r = document.createElement("button"); r.className = "linkbtn"; r.textContent = "↺ กลับเป็นอัตโนมัติ (วันที่ " + autoSignDay(R.fy, R.mi) + ")";
+    r.addEventListener("click", () => setSignDay("")); n.appendChild(r); sh.appendChild(n);
+  }
+
+  if (focus) {
+    let key = focus.key;
+    if (key.startsWith("b") && lastConvertedBlank >= 0 && Number(key.slice(1)) > lastConvertedBlank) key = "b" + (Number(key.slice(1)) - 1);
+    const tr = [...body.rows].find(r => rowKey(r) === key);
+    const i = tr && tr.querySelector('input[data-f="' + focus.f + '"]');
+    if (i) { i.focus(); try { i.setSelectionRange(i.value.length, i.value.length); } catch (e) {} }
+  }
+  lastConvertedBlank = -1;
+}
+function rowKey(tr) {
+  const k = tr.dataset.kind;
+  return k === "entry" ? tr.dataset.id + ":" + tr.dataset.li : k === "blank" ? "b" + tr.dataset.idx : k || "";
+}
+
+function setSignDay(v) {
+  const b = book(R.typeId, R.fy, true); b.signDays = b.signDays || {};
+  const d = parseInt(String(v).trim(), 10), max = daysIn(R.fy, R.mi);
+  if (String(v).trim() === "") delete b.signDays[R.mi];
+  else if (!(d >= 1 && d <= max)) { regMsg("วันที่ลงนามต้องอยู่ระหว่าง 1–" + max, true); renderSheet(); return; }
+  else if (d === autoSignDay(R.fy, R.mi)) delete b.signDays[R.mi];
+  else b.signDays[R.mi] = d;
+  saveLedger(); renderSheet(); if (prevOpen()) renderRegPreview();
+}
+/* ---- บันทึกเมื่อแก้ช่อง ---- */
+let renderTimer = null;
+function scheduleRender() {
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(() => {
+    const a = document.activeElement; let focus = null;
+    if (a && a.dataset && a.dataset.f && a.closest("#sheet")) focus = { key: rowKey(a.closest("tr")), f: a.dataset.f };
+    renderSheet(focus); renderMonths(); if (prevOpen()) renderRegPreview();
+  }, 0);
+}
+function regMsg(text, err) { flash($("msgReg"), text, err); }
+function applyField(e, f, val, li) {
+  if (f === "date") {
+    if (!val.trim()) return true;
+    const r = parseThaiDate(val); if (r.err) { regMsg(r.err, true); return false; }
+    e.date = r.date;
+    if (r.mi !== R.mi) regMsg("ย้ายรายการไปเดือน" + TH_MONTHS[calMonth(r.mi) - 1] + "แล้ว (กดแถบเดือนด้านบนเพื่อดู)");
+  } else if (f === "doc" || f === "note") {
+    const ls = fieldLines(e, f), w = wrapText(val.trim(), f === "doc" ? 1 : 8);
+    while (ls.length <= li) ls.push("");
+    ls.splice(li, 1, ...w);
+    while (ls.length > 1 && ls[ls.length - 1] === "") ls.pop();
+    e[f] = ls.join("\n");
+  }
+  else if (f === "desc") {
+    const ls = sheetLines(e), w = wrapText(val.replace(/\s+$/, ""), 2);   // ยาวเกินช่อง = แตกเป็นบรรทัดต่อ
+    ls.splice(li, 1, ...w); wrapLast = { id: e.id, li: li + w.length - 1 };
+    e.desc = ls.filter((s, i) => i === 0 || s !== "").join("\n");
+  }
+  else if (f === "rec" || f === "pay") {
+    const v = parseMoney(val); if (isNaN(v) || v < 0) { regMsg("จำนวนเงินไม่ถูกต้อง", true); return false; }
+    if (v > 0) { e.kind = f; e.amt = v; } else if ((f === "pay") === isPay(e)) e.amt = 0;
+  }
+  return true;
+}
+function onCellChange(i) {
+  const tr = i.closest("tr"), kind = tr.dataset.kind, f = i.dataset.f, b = book(R.typeId, R.fy, true);
+  if (kind === "carry") {
+    const v = parseMoney(i.value); if (isNaN(v)) { regMsg("ยอดยกมาไม่ถูกต้อง", true); return; }
+    b.opening[f.slice(2)] = v; saveLedger(); scheduleRender(); return;
+  }
+  let e;
+  if (kind === "blank") {
+    if (!i.value.trim()) return;
+    e = { id: "e" + Date.now() + Math.random().toString(36).slice(2, 6), seq: nextSeq(), date: defaultDate(), doc: "", desc: "", kind: "rec", amt: 0, acct: defAcct(R.typeId), note: "" };
+    if (!applyField(e, f, i.value, 0)) { i.value = ""; return; }
+    b.entries.push(e);
+    lastConvertedBlank = Number(tr.dataset.idx);
+    tr.dataset.kind = "entry"; tr.dataset.id = e.id; tr.dataset.li = 0;
+  } else {
+    e = b.entries.find(x => x.id === tr.dataset.id); if (!e) return;
+    if (!applyField(e, f, i.value, Number(tr.dataset.li))) { scheduleRender(); return; }
+    if (!e.desc.trim() && !e.amt && !String(e.doc || "").trim() && !String(e.note || "").trim()) b.entries = b.entries.filter(x => x !== e);   // ลบช่องหมดทั้งแถว = ลบรายการ
+  }
+  if (e.kind !== "rec" && e.amt) {
+    const c = monthData(R.typeId, R.fy, 11).closing[e.acct];
+    if (c < 0) regMsg("คำเตือน: ยอดคงเหลือใน" + ACCT_NAME[e.acct] + "ติดลบ (" + fmt(c) + " บาท)", true);
+  }
+  saveLedger(); scheduleRender();
+}
+$("sheet").addEventListener("change", ev => { if (ev.target.matches("input[data-f]")) onCellChange(ev.target); });
+let wrapLast = null;   // ข้อความยาวเกินช่อง: ตอนกด Enter/Tab จะตัดคำแล้วลงแถวถัดไปให้เอง (ตัดตามคำ ไม่ตัดกลางคำ)
+$("sheet").addEventListener("focusin", ev => {
+  const i = ev.target; if (!i.matches("input[data-f]")) return;
+  if (["rec", "pay", "o-cash", "o-bank", "o-gov"].includes(i.dataset.f) && i.value) i.select();
+});
+$("sheet").addEventListener("keydown", ev => {
+  const i = ev.target; if (!i.matches("input[data-f]")) return;
+  let dir = 0;
+  if (ev.key === "Enter" || ev.key === "ArrowDown") dir = 1; else if (ev.key === "ArrowUp") dir = -1; else return;
+  ev.preventDefault();
+  const rows = [...i.closest("tbody").rows]; let r = rows.indexOf(i.closest("tr"));
+  for (r += dir; r >= 0 && r < rows.length; r += dir) {
+    const nx = rows[r].querySelector('input[data-f="' + i.dataset.f + '"]') || (i.dataset.f === "desc" ? null : rows[r].querySelector('input[data-f="desc"]'));
+    if (nx) { nx.focus(); return; }
+  }
+  i.blur();
+});
+
+/* ---- เมนูท้ายแถว ---- */
+let menuEl = null;
+function closeMenu() { if (menuEl) { menuEl.remove(); menuEl = null; } }
+document.addEventListener("click", ev => { if (menuEl && !menuEl.contains(ev.target) && !ev.target.classList.contains("gbtn")) closeMenu(); });
+$("sheet").addEventListener("click", ev => {
+  const btn = ev.target.closest(".gbtn"); if (!btn) return;
+  closeMenu();
+  const tr = btn.closest("tr"), b = book(R.typeId, R.fy, true), e = b.entries.find(x => x.id === tr.dataset.id); if (!e) return;
+  const wrap = $("sheetWrap"), m = document.createElement("div"); m.className = "menu"; menuEl = m;
+  const item = (text, fn, cls) => { const x = document.createElement("button"); x.textContent = text; if (cls) x.className = cls; x.addEventListener("click", () => { closeMenu(); fn(); }); m.appendChild(x); };
+  const h = document.createElement("div"); h.className = "mh"; h.textContent = "เงินรายการนี้อยู่ที่"; m.appendChild(h);
+  ["bank", "cash", "gov"].forEach(a => item(ACCT_NAME[a], () => { e.acct = a; saveLedger(); scheduleRender(); }, e.acct === a ? "on" : ""));
+  m.appendChild(document.createElement("hr"));
+  item("↵ เพิ่มบรรทัดต่อในช่องรายการ", () => {
+    e.desc = (e.desc || "") + "\n"; saveLedger();
+    renderSheet({ key: e.id + ":" + (sheetLines(e).length - 1), f: "desc" });
+  });
+  item("↑ แทรกรายการใหม่ด้านบนแถวนี้", () => {
+    const list = monthEntries(), idx = list.indexOf(e), prev = list[idx - 1];
+    const seq = prev ? ((prev.seq || 0) + (e.seq || 0)) / 2 : (e.seq || 0) - 1;
+    const ne = { id: "e" + Date.now() + Math.random().toString(36).slice(2, 6), seq, date: e.date, doc: "", desc: "(รายการใหม่)", kind: "rec", amt: 0, acct: e.acct, note: "" };
+    b.entries.push(ne); saveLedger(); renderSheet({ key: ne.id + ":0", f: "desc" }); renderMonths();
+    const i = document.activeElement; if (i && i.select) i.select();
+  });
+  m.appendChild(document.createElement("hr"));
+  item("🗑 ลบรายการนี้", () => {
+    if (!confirm("ลบรายการ \"" + sheetLines(e)[0] + "\"" + (e.amt ? " " + fmt(e.amt) + " บาท" : "") + "?")) return;
+    b.entries = b.entries.filter(x => x !== e); saveLedger(); scheduleRender();
+  }, "del");
+  wrap.appendChild(m);
+  const br = btn.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+  m.style.top = (br.bottom - wr.top + wrap.scrollTop + 4) + "px";
+  m.style.left = Math.max(8, Math.min(wrap.clientWidth - m.offsetWidth - 8, br.right - wr.left + wrap.scrollLeft - 270)) + "px";
+});
+
+/* ---- Ctrl+Z / Ctrl+Y ---- */
+function doUndo(redo) {
+  if (!undoRedo(redo ? REDO : UNDO, redo ? UNDO : REDO)) { regMsg(redo ? "ไม่มีรายการให้ทำซ้ำ" : "ไม่มีรายการให้ย้อนกลับ"); return; }
+  clearTimeout(renderTimer); renderSheet(); renderMonths();
+  regMsg(redo ? "ทำซ้ำแล้ว ↷" : "ย้อนกลับแล้ว ↶");
+}
+$("rUndo").addEventListener("click", () => doUndo(false));
+$("rRedo").addEventListener("click", () => doUndo(true));
+document.addEventListener("keydown", ev => {
+  if ($("view-register").hidden || !(ev.ctrlKey || ev.metaKey) || ev.altKey) return;
+  // ใช้ตำแหน่งปุ่ม (ev.code) แทนตัวอักษร เพื่อให้ใช้ได้แม้แป้นพิมพ์เป็นภาษาไทย (Z = ผ, Y = ั)
+  const k = ev.code === "KeyZ" ? "z" : ev.code === "KeyY" ? "y" : ev.key.toLowerCase();
+  const isUndo = k === "z" && !ev.shiftKey, isRedo = k === "y" || (k === "z" && ev.shiftKey);
+  if (!isUndo && !isRedo) return;
+  const a = document.activeElement;
+  // กำลังพิมพ์ค้างในช่อง (ยังไม่กด Enter): ให้ย้อนตัวอักษรในช่องนั้นตามปกติก่อน
+  if (a && a.matches && a.matches("#sheet input") && a.value !== a.defaultValue) return;
+  ev.preventDefault();
+  if (a && a.blur && a.matches && a.matches("#sheet input")) a.blur();
+  doUndo(isRedo);
+});
+
+/* ---- เต็มจอ ---- */
+function exitFull() { $("sheetWrap").classList.remove("fs"); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+$("rFull").addEventListener("click", () => {
+  const w = $("sheetWrap"); w.classList.add("fs");
+  if (w.requestFullscreen) w.requestFullscreen().catch(() => {});
+  const f = w.querySelector('tr[data-kind="blank"] input[data-f="desc"]'); if (f) f.focus();
+});
+$("rFullExit").addEventListener("click", exitFull);
+document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) $("sheetWrap").classList.remove("fs"); });
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && $("sheetWrap").classList.contains("fs") && !document.fullscreenElement) exitFull(); });
+
+$("rType").addEventListener("change", () => { R.typeId = $("rType").value; renderRegister(); });
+$("rAcct").addEventListener("change", () => {
+  const t = S.types.find(x => x.id === R.typeId); if (!t) return;
+  t.defaultAcct = $("rAcct").value; saveSettingsStore(); renderSheet();
+  regMsg("ตั้งบัญชีเริ่มต้นของเล่มนี้เป็น " + ACCT_NAME[t.defaultAcct] + " แล้ว (รายการเดิมไม่เปลี่ยน)");
+});
+$("rFy").addEventListener("change", () => {
+  const v = parseInt($("rFy").value, 10); if (!(v >= 2500 && v <= 2700)) { $("rFy").value = R.fy; return; }
+  R.fy = v; R.mi = (v === autoFiscalYear()) ? currentMonthIdx() : 0; renderRegister();
+});
+$("rSpacer").addEventListener("change", () => { S.regSpacer = $("rSpacer").checked; saveSettingsStore(); if (prevOpen()) renderRegPreview(); });
+
+/* ---- ส่งออก ---- */
+function exportPages(scope = $("rScope").value) {
+  if (scope !== "month") {
+    const nowFy = autoFiscalYear();
+    const lastMi = R.fy < nowFy ? 11 : R.fy > nowFy ? R.mi : Math.max(R.mi, currentMonthIdx());
+    const out = []; for (let mi = 0; mi <= lastMi; mi++) out.push(...registerPages(R.typeId, R.fy, mi, S.regSpacer));
+    return out;
+  }
+  return registerPages(R.typeId, R.fy, R.mi, S.regSpacer);
+}
+function regFileBase(scope = $("rScope").value) {
+  const t = regType(R.typeId);
+  const when = scope === "book" ? "ทั้งเล่ม_ปีงบ" + R.fy : scope === "year" ? "ปีงบ" + R.fy : TH_MONTHS[calMonth(R.mi) - 1] + beYear(R.fy, R.mi);
+  return ("ทะเบียน_" + (t.registerName || t.type || "") + "_" + when).replace(/[\\/:*?"<>|\s()]+/g, "_").replace(/_+/g, "_");
+}
+const coverOf = () => [regType(R.typeId)];
+function regDocx(btn, scope) { busy(btn, async () => {
+  const bk = scope === "book", pages = exportPages(scope);
+  download(await buildRegisterDocx(pages, bk ? coverOf() : null), regFileBase(scope) + ".docx");
+  flash($("msgRegX"), "สร้างไฟล์ Word แล้ว (" + (pages.length + (bk ? 1 : 0)) + " หน้า" + (bk ? " รวมปก" : "") + ")");
+}, $("msgRegX")); }
+function regPdf(btn, scope) { busy(btn, async () => {
+  const bk = scope === "book", els = exportPages(scope).map(regPageEl);
+  if (bk) els.unshift(pageEl(coverOf()[0]));
+  download(await pagesToPdf(els), regFileBase(scope) + ".pdf");
+  flash($("msgRegX"), "สร้างไฟล์ PDF แล้ว (" + els.length + " หน้า" + (bk ? " รวมปก" : "") + ")");
+}, $("msgRegX")); }
+function regPrint(scope) {
+  const pa = $("printArea"); pa.innerHTML = "";
+  if (scope === "book") pa.appendChild(pageEl(coverOf()[0]));
+  exportPages(scope).forEach(pg => pa.appendChild(regPageEl(pg)));
+  document.fonts.ready.then(() => window.print());
+}
+$("rDocx").addEventListener("click", e => regDocx(e.currentTarget, $("rScope").value));
+$("rPdf").addEventListener("click", e => regPdf(e.currentTarget, $("rScope").value));
+$("rPrint").addEventListener("click", () => regPrint($("rScope").value));
+/* ปุ่มลัด: ทั้งเล่ม (ปก + เนื้อหาทุกเดือน) */
+$("bkDocx").addEventListener("click", e => regDocx(e.currentTarget, "book"));
+$("bkPdf").addEventListener("click", e => regPdf(e.currentTarget, "book"));
+$("bkPrint").addEventListener("click", () => regPrint("book"));
+
+/* ---- สำรอง / นำเข้า ---- */
+$("backupBtn").addEventListener("click", () => {
+  const data = { app: "schoolFinance", version: 1, savedAt: new Date().toISOString(), settings: S, ledger: L };
+  const d = new Date(), stamp = d.getDate() + "-" + (d.getMonth() + 1) + "-" + (d.getFullYear() + 543);
+  download(new Blob([JSON.stringify(data, null, 1)], { type: "application/json" }), "สำรองข้อมูลการเงิน_" + stamp + ".json");
+});
+$("restoreFile").addEventListener("change", async ev => {
+  const f = ev.target.files[0]; ev.target.value = ""; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (data.app !== "schoolFinance" || !data.ledger) throw new Error("ไม่ใช่ไฟล์สำรองของโปรแกรมนี้");
+    if (!confirm("นำเข้าข้อมูลจากไฟล์นี้? ข้อมูลในเครื่องตอนนี้จะถูกแทนที่ทั้งหมด")) return;
+    L = data.ledger; saveLedger(); UNDO.length = 0; REDO.length = 0; updateUndoBtns();
+    if (data.settings) { S = Object.assign(loadSettings(), data.settings); saveSettingsStore(); }
+    renderNav(); fillSettingsForm(); flash($("msgSettings"), "นำเข้าข้อมูลแล้ว ✓");
+  } catch (e) { flash($("msgSettings"), "นำเข้าไม่สำเร็จ: " + e.message, true); }
+});
+
+/* ================================================================
+   รายงานเงินคงเหลือประจำวัน (A4 แนวตั้ง)
+   S.report = { rows:[{id,label,kind:"head"|"sum"|"item",lvl,book,acct}], manual:{id:{cash,bank,gov}}, people:{...} }
+   แถวรวม (sum) = ผลรวมของแถวรายการที่อยู่ถัดลงไปซึ่งมีระดับลึกกว่า จนเจอแถวระดับเท่ากันหรือสูงกว่า
+   ================================================================ */
+const RP_DEFAULT_ROWS = [
+  ["1. เงินงบประมาณ", "head", 0],
+  ["2. เงินรายได้แผ่นดิน", "sum", 0],
+  ["  - ดอกเบี้ยเงินอุดหนุนทั่วไป", "item", 2],
+  ["  - ดอกเบี้ยเงินอุดหนุนอาหารกลางวัน", "item", 2],
+  ["3. เงินนอกงบประมาณ", "head", 0],
+  ["3.1 เงินอุดหนุนทั่วไป", "sum", 1],
+  ["  - เงินอุดหนุนค่าจัดการเรียนการสอน", "item", 2, "t-teach"],
+  ["  - เงินปัจจัยพื้นฐานนักเรียนยากจน", "item", 2],
+  ["  - เงินอุดหนุนโครงการเรียนฟรี 15 ปี", "head", 2],
+  ["     • ค่าหนังสือเรียน", "item", 3],
+  ["     • ค่าอุปกรณ์การเรียน", "item", 3],
+  ["     • ค่าเครื่องแบบนักเรียน (เพิ่มเติม)", "item", 3],
+  ["     • ค่ากิจกรรมพัฒนาคุณภาพผู้เรียน", "item", 3],
+  ["เงินทุนหมุนเวียนโครงการอาหารกลางวัน", "head", 2],
+  ["  - เงินโครงการอาหารกลางวันจาก เทศบาล", "item", 3],
+  ["  - เงิน กสศ. เพื่อโรงเรียนบ้านโพนเดื่อฯ", "item", 3],
+  ["  - เงินค่าบำรุงลูกเสือ ร.ร.บ้านโพนเดื่อฯ", "item", 3],
+  ["3.2 เงินรายได้สถานศึกษา", "sum", 1],
+  ["  - ไม่ระบุวัตถุประสงค์", "item", 2],
+  ["  - ระบุวัตถุประสงค์", "item", 2],
+  ["3.3 เงินภาษีหัก ณ ที่จ่าย", "item", 1, null, "cash"],
+  ["3.4 เงินประกันสัญญา", "item", 1, null, "gov"],
+];
+const rpId = () => "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+function rpDefaultRows() {
+  return RP_DEFAULT_ROWS.map(([label, kind, lvl, bk, acct], i) => ({ id: "rp" + i, label, kind, lvl, books: bk && S.types.some(t => t.id === bk) ? [bk] : [], acct: acct || "bank" }));
+}
+function rpState() {
+  if (!S.report || !Array.isArray(S.report.rows)) S.report = { rows: rpDefaultRows(), manual: {}, people: {} };
+  S.report.manual = S.report.manual || {}; S.report.people = S.report.people || {};
+  return S.report;
+}
+const RP = { date: null };
+const isoDate = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const parseIso = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+/* ยอดคงเหลือของเล่ม ณ สิ้นวันที่ ds */
+function bookBalanceAt(typeId, ds) {
+  const fy = autoFiscalYear(parseIso(ds)), mi = monthIdx(ds);
+  const md = monthData(typeId, fy, mi), bal = Object.assign({}, md.opening);
+  md.rows.forEach(({ e }) => { if (e.date <= ds) applyEntry(bal, e); });
+  return bal;
+}
+function rpBooks(r) { return (Array.isArray(r.books) ? r.books : r.book ? [r.book] : []).filter(id => S.types.some(t => t.id === id)); }
+function rpSetBooks(r, ids) { r.books = ids; delete r.book; }
+function rpRowAcct(r) { const b = rpBooks(r); return b.length ? defAcct(b[0]) : (ACCTS.includes(r.acct) ? r.acct : "bank"); }
+function reportData(ds) {
+  const st = rpState(), rows = st.rows;
+  const vals = rows.map(r => {
+    if (r.kind !== "item") return null;
+    const bs = rpBooks(r);
+    if (!bs.length) return Object.assign(zero(), st.manual[r.id] || {});
+    const v = zero(); bs.forEach(id => { const b = bookBalanceAt(id, ds); ACCTS.forEach(a => v[a] += b[a]); });   // หลายเล่ม = รวมยอดกัน
+    return v;
+  });
+  const lines = rows.map((r, i) => {
+    let v = vals[i];
+    if (r.kind === "sum") {
+      v = zero();
+      for (let j = i + 1; j < rows.length && rows[j].lvl > r.lvl; j++) if (vals[j]) ACCTS.forEach(a => v[a] += vals[j][a]);
+    }
+    if (!v) return { r, v: null };
+    const tot = ACCTS.reduce((s, a) => s + v[a], 0);
+    const main = r.kind === "sum" ? "bank" : rpRowAcct(r);
+    const show = {}; ACCTS.forEach(a => show[a] = !!v[a] || a === main);
+    return { r, v, tot, show, bold: r.lvl <= 1 };
+  });
+  const total = zero(); vals.forEach(v => v && ACCTS.forEach(a => total[a] += v[a]));
+  const d = parseIso(ds);
+  return {
+    lines, total, totalAll: ACCTS.reduce((s, a) => s + total[a], 0),
+    day: d.getDate(), month: TH_MONTHS[d.getMonth()], year: d.getFullYear() + 543,
+    people: st.people,
+  };
+}
+const RP_COLS_MM = [66, 21, 5, 25, 5, 25, 5, 28];   // รวม 180 มม.
+const rpCell = (ln, a) => ln.v && ln.show[a] ? fmt(ln.v[a]) : "";
+function rpPeopleLines(data) {
+  const p = data.people, dots = ".......................................";
+  const nm = n => "(" + (n ? " " + n + " " : dots) + ")";
+  return {
+    maker: ["(ลงชื่อ) " + dots + dots.slice(0, 10) + " " + (p.makerPos || "ผู้จัดทำรายงาน"), nm(p.maker)],
+    hand: "มอบให้ผู้บริหารบันทึกเก็บรักษา เป็นที่เรียบร้อยแล้ว",
+    com: [1, 2, 3].map(k => [dots, nm(p["c" + k]), "กรรมการ"]),
+    recv: "ข้าพเจ้าผู้ได้รับมอบหมายได้รับเงินและเอกสารแทนตัวเงินตามรายละเอียดข้างต้น เมื่อวันที่ " + data.day + " เดือน " + data.month + " พ.ศ. " + data.year,
+    head: ["(ลงชื่อ) " + dots + dots.slice(0, 10) + " " + (p.headPos || "หัวหน้าหน่วยงานย่อย"), nm(p.head !== undefined ? p.head : S.dirName), "ตำแหน่ง " + (p.headRole || ("ผู้อำนวยการ" + S.school))],
+  };
+}
+function rpHeader(data) {
+  return ["รายงานเงินคงเหลือประจำวัน", S.school + "  " + S.office, "ประจำวันที่  " + data.day + "  เดือน  " + data.month + "  พ.ศ.  " + data.year];
+}
+
+/* ---- หน้า A4 (จอ/พิมพ์/PDF) ---- */
+function reportPageEl(data) {
+  const p = document.createElement("div"); p.className = "page rp";
+  const inner = document.createElement("div"); inner.className = "inner"; p.appendChild(inner);
+  rpHeader(data).forEach(h => { const d = document.createElement("div"); d.className = "hd"; d.textContent = h; inner.appendChild(d); });
+  const n = data.lines.length + 1, rowH = Math.min(6.3, 152 / n);
+  const tb = document.createElement("table"); tb.className = "rpt";
+  tb.innerHTML = "<colgroup>" + RP_COLS_MM.map(w => '<col style="width:' + w + 'mm">').join("") + "</colgroup>" +
+    "<thead><tr><th>ประเภท</th><th>เงินสด</th><th></th><th>เงินฝาก<br>ธนาคาร</th><th></th><th>เงินฝากส่วน<br>ราชการผู้เบิก</th><th></th><th>รวม</th></tr></thead>";
+  const body = document.createElement("tbody");
+  const tr = (cells, cls) => {
+    const r = document.createElement("tr"); if (cls) r.className = cls; r.style.height = rowH + "mm";
+    cells.forEach((v, i) => { const c = document.createElement("td"); c.textContent = v; if (i && i % 2 === 1 || i === 7) c.className = "n"; r.appendChild(c); });
+    body.appendChild(r);
+  };
+  data.lines.forEach(ln => tr([ln.r.label.replace(/^\s+/, m => " ".repeat(m.length)), rpCell(ln, "cash"), "", rpCell(ln, "bank"), "", rpCell(ln, "gov"), "", ln.v ? fmt(ln.tot) : ""], ln.bold ? "b" : ""));
+  tr(["รวม", fmt(data.total.cash), "", fmt(data.total.bank), "", fmt(data.total.gov), "", fmt(data.totalAll)], "tot");
+  tb.appendChild(body); inner.appendChild(tb);
+  const P = rpPeopleLines(data), sg = document.createElement("div"); sg.className = "sg";
+  const line = (t, cls, mt) => { const d = document.createElement("div"); d.className = cls || ""; d.textContent = t; if (mt) d.style.marginTop = mt + "mm"; sg.appendChild(d); return d; };
+  line(P.maker[0], "c", 5); line(P.maker[1], "c");
+  line(P.hand, "", 3);
+  const r3 = document.createElement("div"); r3.className = "row3"; r3.style.marginTop = "7mm";
+  P.com.forEach(c => { const col = document.createElement("div"); c.forEach(t => { const d = document.createElement("div"); d.textContent = t; col.appendChild(d); }); r3.appendChild(col); });
+  sg.appendChild(r3);
+  line(P.recv, "", 3);
+  line(P.head[0], "c", 6); line(P.head[1], "c"); line(P.head[2], "c");
+  inner.appendChild(sg);
+  return p;
+}
+
+/* ---- Word ---- */
+async function buildReportDocx(data) {
+  const d = window.docx;
+  const F = { ascii: FONT, hAnsi: FONT, cs: FONT, eastAsia: FONT };
+  const tw = mm => Math.round(mm * MM);
+  const run = (text, size, bold) => new d.TextRun({ text, bold: !!bold, boldComplexScript: !!bold, size: size * 2, sizeComplexScript: size * 2, font: F });
+  const para = (text, o = {}) => new d.Paragraph({
+    alignment: o.align || d.AlignmentType.LEFT, indent: o.indent ? { left: tw(o.indent) } : undefined,
+    spacing: { before: tw(o.before || 0), after: 0, line: tw(o.line || 6), lineRule: d.LineRuleType.EXACT },
+    children: String(text).split("\n").flatMap((t, i) => i ? [new d.TextRun({ break: 1 }), run(t, o.size || 15, o.bold)] : [run(t, o.size || 15, o.bold)]),
+  });
+  const B = { style: d.BorderStyle.SINGLE, size: 6, color: "000000" }, DB = { style: d.BorderStyle.DOUBLE, size: 6, color: "000000" };
+  const NB = { style: d.BorderStyle.NONE, size: 0, color: "FFFFFF" };
+  const noBorders = { top: NB, bottom: NB, left: NB, right: NB, insideHorizontal: NB, insideVertical: NB };
+  const widths = RP_COLS_MM.map(tw);
+  const C = d.AlignmentType.CENTER, RT = d.AlignmentType.RIGHT, LT = d.AlignmentType.LEFT;
+  const cell = (text, o = {}) => new d.TableCell({
+    children: [para(text, { align: o.al || LT, bold: o.bold, line: o.line || 5.6 })],
+    verticalAlign: d.VerticalAlign.CENTER, width: { size: widths[o.i], type: d.WidthType.DXA },
+    borders: o.dbl ? { top: DB, bottom: DB, left: B, right: B } : { top: B, bottom: B, left: B, right: B },
+    margins: { left: tw(1), right: tw(1), top: 0, bottom: 0 },
+  });
+  const n = data.lines.length + 1, rowH = Math.min(6.3, 152 / n);
+  const row = (cells, h) => new d.TableRow({ children: cells, height: { value: tw(h), rule: d.HeightRule.EXACT }, cantSplit: true });
+  const rows = [row(["ประเภท", "เงินสด", "", "เงินฝาก\nธนาคาร", "", "เงินฝากส่วน\nราชการผู้เบิก", "", "รวม"].map((t, i) => cell(t, { i, al: C, line: 5 })), 11)];
+  data.lines.forEach(ln => rows.push(row([ln.r.label.replace(/^\s+/, m => " ".repeat(m.length)), rpCell(ln, "cash"), "", rpCell(ln, "bank"), "", rpCell(ln, "gov"), "", ln.v ? fmt(ln.tot) : ""]
+    .map((t, i) => cell(t, { i, al: i ? RT : LT, bold: ln.bold })), rowH)));
+  rows.push(row(["รวม", fmt(data.total.cash), "", fmt(data.total.bank), "", fmt(data.total.gov), "", fmt(data.totalAll)].map((t, i) => cell(t, { i, al: i ? RT : C, bold: true, dbl: true })), rowH));
+  const P = rpPeopleLines(data), W = widths.reduce((a, b) => a + b, 0), third = Math.floor(W / 3);
+  const ch = rpHeader(data).map(h => para(h, { align: C, bold: true, size: 16, line: 6.5 }));
+  ch.push(para("", { line: 2 }));
+  ch.push(new d.Table({ rows, columnWidths: widths, width: { size: W, type: d.WidthType.DXA }, layout: d.TableLayoutType.FIXED }));
+  ch.push(para(P.maker[0], { align: C, before: 5 }), para(P.maker[1], { align: C }), para(P.hand, { before: 3 }));
+  ch.push(para("", { line: 7 }));
+  ch.push(new d.Table({ borders: noBorders, columnWidths: [third, third, third], width: { size: third * 3, type: d.WidthType.DXA }, layout: d.TableLayoutType.FIXED,
+    rows: [new d.TableRow({ children: P.com.map(c => new d.TableCell({ borders: noBorders, width: { size: third, type: d.WidthType.DXA }, children: c.map(t => para(t, { align: C })) })) })] }));
+  ch.push(para(P.recv, { before: 3 }), para(P.head[0], { align: C, before: 6 }), para(P.head[1], { align: C }), para(P.head[2], { align: C }));
+  const doc = new d.Document({ creator: S.school, title: "รายงานเงินคงเหลือประจำวัน", language: "th-TH",
+    styles: { default: { document: { run: { font: F, size: 30, sizeComplexScript: 30 } } } },
+    sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: tw(12), bottom: tw(8), left: tw(15), right: tw(15), header: 0, footer: 0 } } }, children: ch }] });
+  return d.Packer.toBlob(doc);
+}
+
+/* ---- ตารางกรอกบนจอ ---- */
+function renderReport() {
+  rpState();
+  if (!RP.date) RP.date = isoDate(new Date());
+  $("rpDate").value = RP.date;
+  renderReportSheet();
+}
+function renderReportSheet(focus) {
+  const data = reportData(RP.date), st = rpState();
+  $("rpDateTh").textContent = "วันที่ " + data.day + " " + data.month + " " + data.year;
+  const sh = $("rpSheet"); sh.innerHTML = "";
+  const hd = document.createElement("div"); hd.className = "hd"; hd.innerHTML = ""; rpHeader(data).forEach(t => { const x = document.createElement("div"); x.textContent = t; hd.appendChild(x); }); sh.appendChild(hd);
+  const tb = document.createElement("table"); tb.className = "st rp";
+  const tot = RP_COLS_MM.reduce((a, b) => a + b, 0);
+  tb.innerHTML = "<colgroup>" + RP_COLS_MM.map(w => '<col style="width:' + (w / tot * 95).toFixed(2) + '%">').join("") + '<col style="width:5%"></colgroup>' +
+    '<thead><tr><th style="height:56px">ประเภท</th><th>เงินสด</th><th></th><th>เงินฝาก<br>ธนาคาร</th><th></th><th>เงินฝากส่วน<br>ราชการผู้เบิก</th><th></th><th>รวม</th><th class="g"></th></tr></thead>';
+  const body = document.createElement("tbody");
+  const td = (cls, txt) => { const c = document.createElement("td"); if (cls) c.className = cls; if (txt !== undefined) c.textContent = txt; return c; };
+  const inp = (f, val, cls) => { const c = td(cls); const i = document.createElement("input"); i.dataset.f = f; i.value = val; c.appendChild(i); return c; };
+  data.lines.forEach((ln, idx) => {
+    const r = ln.r, tr = document.createElement("tr"); tr.dataset.id = r.id; tr.className = (ln.bold ? "b " : "") + r.kind;
+    tr.appendChild(inp("label", r.label, "lbl"));
+    const bks = rpBooks(r), linked = r.kind === "item" && bks.length > 0;
+    ACCTS.forEach((a, k) => {
+      if (r.kind === "item" && !linked) { const c = inp(a, ln.v[a] ? fmt(ln.v[a]) : "", "n"); c.querySelector("input").inputMode = "decimal"; c.querySelector("input").placeholder = ln.show[a] ? "0.00" : ""; tr.appendChild(c); }
+      else if (linked) { const c = td("link", rpCell(ln, a)); if (k === 0) { /* ป้ายบอกเล่ม */ } tr.appendChild(c); }
+      else tr.appendChild(td(r.kind === "sum" ? "auto" : "off", rpCell(ln, a)));
+      tr.appendChild(td("sp"));
+    });
+    tr.lastChild.remove();
+    tr.appendChild(td("sp"));
+    tr.appendChild(td(r.kind === "head" ? "off" : "auto", ln.v ? fmt(ln.tot) : ""));
+    if (r.kind === "item") {   // ปุ่มเลือกเล่มในช่องประเภทเงิน
+      const tag = document.createElement("button"); tag.className = "book-tag" + (linked ? "" : " empty");
+      const names = bks.map(id => { const t = S.types.find(x => x.id === id); return t.registerName || t.type; });
+      tag.textContent = linked ? "📒 " + (bks.length > 1 ? bks.length + " เล่ม" : names[0]) : "📒 เลือกเล่ม";
+      tag.title = linked ? "ดึงยอดรวมจาก: " + names.join(", ") : "กดเพื่อเลือกเล่มทะเบียนที่จะดึงยอดมาใส่";
+      tr.children[0].appendChild(tag);
+    }
+    const g = td("g"); const b = document.createElement("button"); b.className = "gbtn"; b.textContent = "⋮"; b.title = "ตัวเลือกแถว"; g.appendChild(b); tr.appendChild(g);
+    body.appendChild(tr);
+  });
+  const tt = document.createElement("tr"); tt.className = "tot";
+  [["", "รวม"], ["auto", fmt(data.total.cash)], ["sp"], ["auto", fmt(data.total.bank)], ["sp"], ["auto", fmt(data.total.gov)], ["sp"], ["auto", fmt(data.totalAll)], ["g"]].forEach(([c, t]) => { const x = td(c, t); if (!c) x.style.textAlign = "center"; tt.appendChild(x); });
+  body.appendChild(tt); tb.appendChild(body); sh.appendChild(tb);
+  /* ลายเซ็น */
+  const P = data.people, sg = document.createElement("div"); sg.className = "rp-sig";
+  const nameIn = (key, ph, def) => { const i = document.createElement("input"); i.dataset.p = key; i.placeholder = ph; i.value = P[key] !== undefined ? P[key] : (def || ""); return i; };
+  const line = (cls, ...parts) => { const d = document.createElement("div"); if (cls) d.className = cls; parts.forEach(x => d.append(x)); sg.appendChild(d); return d; };
+  line("c", "(ลงชื่อ) ........................................ ", nameIn("makerPos", "ตำแหน่ง", "ผู้จัดทำรายงาน"));
+  line("c", "( ", nameIn("maker", "ชื่อผู้จัดทำรายงาน"), " )");
+  line("", "มอบให้ผู้บริหารบันทึกเก็บรักษา เป็นที่เรียบร้อยแล้ว");
+  const r3 = line("row3");
+  [1, 2, 3].forEach(k => { const col = document.createElement("div"); col.append("........................................", document.createElement("br"), "( ", nameIn("c" + k, "ชื่อกรรมการคนที่ " + k), " )", document.createElement("br"), "กรรมการ"); r3.appendChild(col); });
+  line("", "ข้าพเจ้าผู้ได้รับมอบหมายได้รับเงินและเอกสารแทนตัวเงินตามรายละเอียดข้างต้น เมื่อวันที่ " + data.day + " เดือน " + data.month + " พ.ศ. " + data.year);
+  line("c", "(ลงชื่อ) ........................................ ", nameIn("headPos", "ตำแหน่ง", "หัวหน้าหน่วยงานย่อย"));
+  line("c", "( ", nameIn("head", "ชื่อหัวหน้าหน่วยงาน", S.dirName), " )");
+  const hr = nameIn("headRole", "", "ผู้อำนวยการ" + S.school); hr.style.minWidth = "420px"; line("c", "ตำแหน่ง ", hr);
+  sh.appendChild(sg);
+  if (focus) { const el = sh.querySelector('tr[data-id="' + focus.id + '"] input[data-f="' + focus.f + '"]'); if (el) { el.focus(); if (el.select) el.select(); } }
+}
+function rpMsg(t, err) { flash($("msgRp"), t, err); }
+$("rpSheet").addEventListener("change", ev => {
+  const i = ev.target; if (i.tagName !== "INPUT") return;
+  const st = rpState();
+  if (i.dataset.p) { st.people[i.dataset.p] = i.value.trim(); saveSettingsStore(); return; }
+  const tr = i.closest("tr"), r = st.rows.find(x => x.id === tr.dataset.id); if (!r) return;
+  if (i.dataset.f === "label") { r.label = i.value; saveSettingsStore(); return; }
+  const v = parseMoney(i.value);
+  if (isNaN(v)) { rpMsg("ตัวเลขไม่ถูกต้อง: " + i.value, true); i.value = ""; return; }
+  st.manual[r.id] = Object.assign(zero(), st.manual[r.id] || {}, { [i.dataset.f]: v });
+  saveSettingsStore(); rpUpdateNumbers();
+});
+/* อัปเดตเฉพาะตัวเลข (ไม่วาดตารางใหม่ เคอร์เซอร์จึงไม่หลุด) */
+function rpUpdateNumbers() {
+  const data = reportData(RP.date), rows = [...$("rpSheet").querySelectorAll("tbody tr")];
+  data.lines.forEach((ln, k) => {
+    const tds = rows[k].children;
+    ACCTS.forEach((a, j) => { const c = tds[1 + j * 2]; const inp = c.querySelector("input"); if (inp) { if (document.activeElement !== inp) inp.value = ln.v[a] ? fmt(ln.v[a]) : ""; } else if (!c.querySelector(".book-tag")) c.textContent = rpCell(ln, a); });
+    tds[7].textContent = ln.v ? fmt(ln.tot) : "";
+  });
+  const t = rows[rows.length - 1].children;
+  t[1].textContent = fmt(data.total.cash); t[3].textContent = fmt(data.total.bank); t[5].textContent = fmt(data.total.gov); t[7].textContent = fmt(data.totalAll);
+}
+$("rpSheet").addEventListener("keydown", ev => {
+  const i = ev.target; if (i.tagName !== "INPUT" || !i.dataset.f || ev.key !== "Enter") return;
+  ev.preventDefault();
+  let tr = i.closest("tr").nextElementSibling;
+  while (tr) { const n = tr.querySelector('input[data-f="' + i.dataset.f + '"]'); if (n) { i.blur(); n.focus(); n.select(); return; } tr = tr.nextElementSibling; }
+  i.blur();
+});
+let rpMenuEl = null;
+function rpCloseMenu() { if (rpMenuEl) { rpMenuEl.remove(); rpMenuEl = null; } }
+document.addEventListener("click", ev => { if (rpMenuEl && !rpMenuEl.contains(ev.target) && !ev.target.closest("#rpSheet .gbtn") && !ev.target.closest("#rpSheet .book-tag")) rpCloseMenu(); });
+function rpOpenBookPicker(r, anchor) {
+  rpCloseMenu();
+  const wrap = $("rpWrap"), m = document.createElement("div"); m.className = "menu"; rpMenuEl = m;
+  const h = document.createElement("div"); h.className = "mh"; h.textContent = "เลือกเล่มที่จะดึงยอดมาใส่ (เลือกหลายเล่ม = รวมยอด)"; m.appendChild(h);
+  const sel = new Set(rpBooks(r)), sum = document.createElement("div"); sum.className = "sumline";
+  const showSum = () => { const v = zero(); sel.forEach(id => { const b = bookBalanceAt(id, RP.date); ACCTS.forEach(a => v[a] += b[a]); }); sum.textContent = sel.size ? "ยอดรวม " + fmt(ACCTS.reduce((s, a) => s + v[a], 0)) + " บาท" : "ไม่ได้เลือกเล่ม = พิมพ์ยอดเอง"; };
+  S.types.forEach(t => {
+    const l = document.createElement("label"); l.className = "chk"; const c = document.createElement("input"); c.type = "checkbox"; c.checked = sel.has(t.id);
+    c.addEventListener("change", () => { c.checked ? sel.add(t.id) : sel.delete(t.id); showSum(); });
+    const b = bookBalanceAt(t.id, RP.date);
+    l.append(c, (t.registerName || t.type) + "  (" + fmt(ACCTS.reduce((s, a) => s + b[a], 0)) + ")"); m.appendChild(l);
+  });
+  m.appendChild(document.createElement("hr")); showSum(); m.appendChild(sum);
+  const ok = document.createElement("div"); ok.className = "okrow";
+  const bt = (t, cls, fn) => { const x = document.createElement("button"); x.className = "btn " + cls; x.textContent = t; x.style.width = "auto"; x.addEventListener("click", fn); ok.appendChild(x); };
+  bt("ยกเลิก", "", rpCloseMenu);
+  bt("✓ ตกลง", "primary", () => { rpSetBooks(r, S.types.filter(t => sel.has(t.id)).map(t => t.id)); rpCloseMenu(); saveSettingsStore(); renderReportSheet(); });
+  m.appendChild(ok);
+  wrap.appendChild(m);
+  const br = anchor.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+  m.style.top = (br.bottom - wr.top + 4) + "px";
+  m.style.left = Math.max(8, Math.min(wrap.clientWidth - m.offsetWidth - 8, br.left - wr.left)) + "px";
+}
+$("rpSheet").addEventListener("click", ev => {
+  const tagBtn = ev.target.closest(".book-tag");
+  if (tagBtn) { const r = rpState().rows.find(x => x.id === tagBtn.closest("tr").dataset.id); if (r) rpOpenBookPicker(r, tagBtn); return; }
+  const btn = ev.target.closest(".gbtn"); if (!btn) return;
+  rpCloseMenu();
+  const st = rpState(), id = btn.closest("tr").dataset.id, idx = st.rows.findIndex(x => x.id === id), r = st.rows[idx]; if (!r) return;
+  const wrap = $("rpWrap"), m = document.createElement("div"); m.className = "menu"; rpMenuEl = m;
+  const done = (focus) => { saveSettingsStore(); renderReportSheet(focus); };
+  const item = (text, fn, cls) => { const x = document.createElement("button"); x.textContent = text; if (cls) x.className = cls; x.addEventListener("click", () => { rpCloseMenu(); fn(); }); m.appendChild(x); };
+  const head = t => { const h = document.createElement("div"); h.className = "mh"; h.textContent = t; m.appendChild(h); };
+  head("ชนิดแถว");
+  [["item", "รายการ (มียอดเงิน)"], ["sum", "ยอดรวมกลุ่ม (รวมแถวย่อยด้านล่าง)"], ["head", "หัวข้อ (ไม่มียอดเงิน)"]].forEach(([k, t]) => item(t, () => { r.kind = k; done(); }, r.kind === k ? "on" : ""));
+  if (r.kind === "item") {
+    m.appendChild(document.createElement("hr")); head("ยอดเงินของแถวนี้");
+    item("📒 เลือกเล่มที่จะดึงยอด…", () => setTimeout(() => rpOpenBookPicker(r, btn), 0));
+    item("พิมพ์ยอดเอง (ไม่ดึงจากเล่ม)", () => { rpSetBooks(r, []); done(); }, !rpBooks(r).length ? "on" : "");
+  }
+  m.appendChild(document.createElement("hr")); head("ระดับย่อย (ตอนนี้ " + r.lvl + ") ใช้กำหนดว่าแถวรวมรวมแถวไหน");
+  item("→ เลื่อนเป็นแถวย่อยลึกขึ้น", () => { r.lvl = Math.min(5, r.lvl + 1); done(); });
+  if (r.lvl > 0) item("← เลื่อนเป็นแถวระดับสูงขึ้น", () => { r.lvl = Math.max(0, r.lvl - 1); done(); });
+  m.appendChild(document.createElement("hr"));
+  if (idx > 0) item("↑ ย้ายแถวขึ้น", () => { st.rows.splice(idx - 1, 0, st.rows.splice(idx, 1)[0]); done(); });
+  if (idx < st.rows.length - 1) item("↓ ย้ายแถวลง", () => { st.rows.splice(idx + 1, 0, st.rows.splice(idx, 1)[0]); done(); });
+  item("＋ แทรกแถวใหม่ด้านล่าง", () => { const nr = { id: rpId(), label: "  - ", kind: "item", lvl: Math.max(r.lvl, r.kind === "item" ? r.lvl : r.lvl + 1), books: [], acct: "bank" }; st.rows.splice(idx + 1, 0, nr); done({ id: nr.id, f: "label" }); });
+  m.appendChild(document.createElement("hr"));
+  item("🗑 ลบแถวนี้", () => { if (!confirm("ลบแถว \"" + r.label.trim() + "\"?")) return; st.rows.splice(idx, 1); delete st.manual[r.id]; done(); }, "del");
+  wrap.appendChild(m);
+  const br = btn.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+  m.style.top = (br.bottom - wr.top + 4) + "px";
+  m.style.left = Math.max(8, Math.min(wrap.clientWidth - m.offsetWidth - 8, br.right - wr.left - 280)) + "px";
+});
+$("rpAddRow").addEventListener("click", () => { const st = rpState(), nr = { id: rpId(), label: "", kind: "item", lvl: 1, books: [], acct: "bank" }; st.rows.push(nr); saveSettingsStore(); renderReportSheet({ id: nr.id, f: "label" }); });
+$("rpReset").addEventListener("click", () => {
+  if (!confirm("คืนรายการแถวทั้งหมดตามแบบฟอร์มเดิม? (ยอดที่พิมพ์ไว้ในแถวเดิมจะยังอยู่ ชื่อผู้ลงนามไม่เปลี่ยน)")) return;
+  rpState().rows = rpDefaultRows(); saveSettingsStore(); renderReportSheet();
+});
+$("rpDate").addEventListener("change", () => { if ($("rpDate").value) { RP.date = $("rpDate").value; renderReportSheet(); } });
+$("rpToday").addEventListener("click", () => { RP.date = isoDate(new Date()); renderReport(); });
+$("rpMonthEnd").addEventListener("click", () => {
+  const b = RP.date ? parseIso(RP.date) : new Date(), d = new Date(b.getFullYear(), b.getMonth() + 1, 0);
+  if (S.skipWeekend !== false) while ([0, 6].includes(d.getDay())) d.setDate(d.getDate() - 1);
+  RP.date = isoDate(d); renderReport();
+});
+function rpFileBase() { const d = reportData(RP.date); return ("รายงานเงินคงเหลือ_" + d.day + "_" + d.month + "_" + d.year).replace(/[\\/:*?"<>|\s]+/g, "_"); }
+$("rpDocx").addEventListener("click", e => busy(e.currentTarget, async () => { download(await buildReportDocx(reportData(RP.date)), rpFileBase() + ".docx"); rpMsg("สร้างไฟล์ Word แล้ว"); }, $("msgRp")));
+$("rpPdf").addEventListener("click", e => busy(e.currentTarget, async () => { download(await pagesToPdf([reportPageEl(reportData(RP.date))], true), rpFileBase() + ".pdf"); rpMsg("สร้างไฟล์ PDF แล้ว"); }, $("msgRp")));
+$("rpPrint").addEventListener("click", () => {
+  const pa = $("printArea"); pa.innerHTML = ""; pa.appendChild(reportPageEl(reportData(RP.date)));
+  const st = document.createElement("style"); st.id = "pgPortrait"; st.textContent = "@media print{@page{size:A4 portrait;margin:0}}"; document.head.appendChild(st);
+  const off = () => { st.remove(); removeEventListener("afterprint", off); };
+  addEventListener("afterprint", off);
+  document.fonts.ready.then(() => { window.print(); setTimeout(off, 1500); });
+});
+
+/* ================================================================
+   หน้าแรก: ชั้นหนังสือ (แต่ละเล่ม = ประเภทเงิน)
+   ================================================================ */
+const BOOK_COLORS = ["#1f5fbf", "#b23b2e", "#1e7d43", "#7b3fa0", "#c07a12", "#0f7c8a", "#8a2d5b", "#3d4f8f"];
+function bookColor(t, i) { return t.color || BOOK_COLORS[i % BOOK_COLORS.length]; }
+function renderHome() {
+  const fy = fiscalYear(), mi = currentMonthIdx();
+  $("homeSchool").textContent = S.school + " • " + S.office;
+  $("homeFy").textContent = "ปีงบประมาณ " + fy;
+  const box = $("bookcase"); box.innerHTML = "";
+  const small = innerWidth <= 600, bw = small ? 136 : 178, gp = small ? 16 : 30, padX = small ? 36 : 88;
+  const perShelf = Math.max(2, Math.floor((box.clientWidth - padX + gp - 2) / (bw + gp))) || 4;
+  const items = [...S.types.map((t, i) => ({ t, i })), { add: true }];
+  for (let s = 0; s < items.length; s += perShelf) {
+    const shelf = document.createElement("div"); shelf.className = "shelf";
+    items.slice(s, s + perShelf).forEach((it, k) => shelf.appendChild(it.add ? addBookEl(s + k) : bookEl(it.t, it.i, fy, mi, s + k)));
+    box.appendChild(shelf);
+    const gap = document.createElement("div"); gap.className = "shelf-gap"; box.appendChild(gap);
+  }
+  const tip = document.createElement("div"); tip.className = "home-tip"; tip.textContent = isTouch() ? "แตะที่เล่มเพื่อแง้มดูข้างใน • แตะซ้ำเพื่อเปิดทะเบียนเล่มนั้น" : "ชี้ที่เล่มเพื่อแง้มดูข้างใน • คลิกเพื่อเปิดทะเบียนเล่มนั้น";
+  box.appendChild(tip);
+}
+function bookEl(t, i, fy, mi, order) {
+  const md = monthData(t.id, fy, mi);
+  const tot = b => ACCTS.reduce((s, a) => s + b[a], 0);
+  const n = book(t.id, fy).entries.length;
+  const el = document.createElement("div"); el.className = "book"; el.tabIndex = 0;
+  el.style.setProperty("--c", bookColor(t, i)); el.style.setProperty("--i", order);
+  el.title = "เปิดทะเบียน " + (t.registerName || t.type);
+  /* ข้างในเล่ม: สรุปเดือนนี้ + รายการล่าสุด */
+  const pg = document.createElement("div"); pg.className = "pages";
+  const add = (cls, a, b) => { const r = document.createElement("div"); r.className = cls; if (b === undefined) r.textContent = a; else { const x = document.createElement("span"), y = document.createElement("span"); x.textContent = a; y.textContent = b; r.append(x, y); } pg.appendChild(r); };
+  add("pg-m", "เดือน" + TH_MONTHS[calMonth(mi) - 1] + " " + beYear(fy, mi));
+  add("pg-row", "ยกมา", fmt(tot(md.opening)));
+  add("pg-row pg-rec", "รับ", fmt(md.sum.rec));
+  add("pg-row pg-pay", "จ่าย", fmt(md.sum.pay));
+  const last = md.rows.slice(-3).reverse();
+  if (last.length) last.forEach(({ e }) => add("pg-row", "• " + String(e.desc || "").split("\n")[0], e.amt ? (isPay(e) ? "-" : "+") + fmt(e.amt) : ""));
+  else add("pg-empty", "ยังไม่มีรายการเดือนนี้");
+  add("pg-bal", "คงเหลือ " + fmt(tot(md.closing)));
+  /* ปก */
+  const cv = document.createElement("div"); cv.className = "cover";
+  const c = (cls, txt) => { const d = document.createElement("div"); d.className = cls; d.textContent = txt; cv.appendChild(d); return d; };
+  if (t.showHeader !== false && t.header) c("c-top", t.header);
+  c("c-title", t.title || "ทะเบียนคุมเงิน");
+  c("c-band", "");
+  c("c-type", t.type || t.registerName || "");
+  c("c-fy", "ปีงบ " + fy);
+  c("c-stat", n ? n + " รายการในปีนี้" : "เล่มใหม่");
+  c("c-school", S.school);
+  el.append(pg, cv);
+  const open = () => openBook(el, t.id);
+  el.addEventListener("click", () => { if (peekFirst(el)) return; open(); });
+  el.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); open(); } });
+  return el;
+}
+function addBookEl(order) {
+  const el = document.createElement("div"); el.className = "book add"; el.tabIndex = 0; el.style.setProperty("--i", order);
+  el.innerHTML = "<b>＋</b><div>เพิ่มเล่มใหม่</div>";
+  const go = () => {
+    const name = (prompt("ชื่อประเภทเงินของเล่มใหม่ (เช่น ค่าหนังสือเรียน, ค่าอาหารกลางวัน)") || "").trim(); if (!name) return;
+    const t = { id: "t-" + Date.now(), header: HEADER_15Y, title: "ทะเบียนคุมเงินนอกงบประมาณ", type: name, registerName: name, checked: false, showHeader: true, defaultAcct: "bank" };
+    S.types.push(t); saveSettingsStore(); renderHome();
+  };
+  el.addEventListener("click", () => { if (peekFirst(el)) return; go(); });
+  el.addEventListener("keydown", ev => { if (ev.key === "Enter") go(); });
+  return el;
+}
+/* จอสัมผัส: แตะครั้งแรก = แง้มดู, แตะซ้ำ = เปิด */
+const isTouch = () => window.matchMedia && matchMedia("(hover: none)").matches;
+function peekFirst(el) {
+  if (!isTouch() || el.classList.contains("peek")) return false;
+  document.querySelectorAll(".book.peek").forEach(b => b.classList.remove("peek"));
+  el.classList.add("peek"); return true;
+}
+document.addEventListener("click", ev => { if (!ev.target.closest(".book")) document.querySelectorAll(".book.peek").forEach(b => b.classList.remove("peek")); });
+const reduceMotion = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+function openBook(el, typeId) {
+  if (el.classList.contains("opening")) return;
+  const go = () => { R.typeId = typeId; R.fy = fiscalYear(); R.mi = currentMonthIdx(); showView("register"); };
+  if (reduceMotion()) { go(); return; }
+  /* เล่มลอยมากลางจอ ขยาย แล้วเปิดปก */
+  const r = el.getBoundingClientRect();
+  const dx = innerWidth / 2 - (r.left + r.width / 2), dy = innerHeight / 2 - (r.top + r.height / 2);
+  const k = Math.min(2.2, (innerHeight * 0.75) / r.height, (innerWidth * 0.9) / r.width);
+  el.classList.remove("peek");
+  el.style.transform = "translate(" + dx + "px," + dy + "px) scale(" + k + ")";
+  el.classList.add("opening");
+  const fl = $("pageFlash");
+  setTimeout(() => fl.classList.add("on"), 650);
+  setTimeout(() => { go(); setTimeout(() => fl.classList.remove("on"), 60); }, 1000);
+}
+function showView(v) {
+  document.querySelectorAll("nav button[data-view]").forEach(x => x.classList.toggle("active", x.dataset.view === v));
+  document.querySelectorAll("main > section").forEach(sec => {
+    const on = sec.id === "view-" + v; sec.hidden = !on;
+    if (on) { sec.classList.remove("view-in"); void sec.offsetWidth; sec.classList.add("view-in"); }
+  });
+  if (v === "settings") fillSettingsForm(); else if (v === "register") renderRegister(); else if (v === "home") renderHome(); else if (v === "report") renderReport(); else if (v === "history") renderHistory(); else renderAll();
+  window.scrollTo({ top: 0 });
+}
+$("backHome").addEventListener("click", () => {
+  const fl = $("pageFlash");
+  if (reduceMotion()) { showView("home"); return; }
+  fl.classList.add("on");
+  setTimeout(() => { showView("home"); fl.classList.remove("on"); }, 280);
+});
+let homeResizeT = null;
+window.addEventListener("resize", () => { if (!$("view-home").hidden) { clearTimeout(homeResizeT); homeResizeT = setTimeout(renderHome, 200); } });
+showView("home");   // เปิดโปรแกรมที่หน้าชั้นหนังสือ
+
+window.__rp = { reportData, reportPageEl, buildReportDocx, bookBalanceAt, RP };
+window.__reg = { monthData, registerPages, buildRegisterDocx, pagesToPdf, regPageEl, get ledger() { return L; }, set ledger(v) { L = v; }, R, renderRegister };
+</script>
+<script>
+"use strict";
+/* ================================================================
+   เข้าสู่ระบบ + ฐานข้อมูล (เครื่องนี้ / GitHub repo ส่วนตัว) + สำรองอัตโนมัติ + ประวัติ
+   - รหัสผ่านใช้ปลดล็อก token ที่เข้ารหัส (AES-GCM + PBKDF2) เก็บไว้ในเครื่อง
+   - GitHub: ข้อมูลทั้งหมดอยู่ในไฟล์ JSON เดียวใน repo ส่วนตัว ทุกการบันทึก = 1 commit = ประวัติย้อนหลัง
+   ================================================================ */
+const AUTH_KEY = "schoolFinance.auth.v1", SYNC_KEY = "schoolFinance.sync.v1", LHIST_KEY = "schoolFinance.history.v1", SESS_KEY = "schoolFinance.session";
+const A = { cfg: null, token: null, mode: null, timer: null, pushing: false, again: false, state: "idle", last: null, histPage: 1 };
+const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+A.cfg = lsGet(AUTH_KEY, null);
+const syncInfo = () => lsGet(SYNC_KEY, { sha: null, dirty: false, at: null });
+const setSync = o => lsSet(SYNC_KEY, Object.assign(syncInfo(), o));
+
+/* ---- เข้ารหัส ---- */
+const b64 = u8 => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s.replace(/\s/g, "")), c => c.charCodeAt(0));
+const utf8b64 = str => b64(new TextEncoder().encode(str));
+const b64utf8 = s => new TextDecoder().decode(unb64(s));
+async function pwKey(pw, salt) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 250000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+async function seal(pw, obj) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await pwKey(pw, salt), new TextEncoder().encode(JSON.stringify(obj)));
+  return { salt: b64(salt), iv: b64(iv), ct: b64(new Uint8Array(ct)) };
+}
+async function unseal(pw, box) {
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(box.iv) }, await pwKey(pw, unb64(box.salt)), unb64(box.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+/* ---- GitHub API ---- */
+async function gh(path, opt = {}) {
+  const r = await fetch("https://api.github.com" + path, Object.assign({}, opt, {
+    headers: Object.assign({ Accept: "application/vnd.github+json", Authorization: "Bearer " + A.token, "X-GitHub-Api-Version": "2022-11-28" }, opt.headers || {}),
+    cache: "no-store",
+  }));
+  if (r.status === 404) return null;
+  if (!r.ok) { let m = ""; try { m = (await r.json()).message; } catch (e) {} const err = new Error(ghErr(r.status, m)); err.status = r.status; throw err; }
+  return r.status === 204 ? {} : r.json();
+}
+function ghErr(st, m) {
+  if (st === 401) return "token ไม่ถูกต้องหรือหมดอายุ";
+  if (st === 403) return "token ไม่มีสิทธิ์ (ต้องให้สิทธิ์ Contents: Read and write กับ repo นี้)" + (m ? " — " + m : "");
+  if (st === 409 || st === 422) return "ข้อมูลบน GitHub ถูกแก้จากที่อื่น";
+  return "GitHub ตอบกลับ " + st + (m ? ": " + m : "");
+}
+const repoPath = () => "/repos/" + A.cfg.repo;
+const DATA_FILE = "finance-data.json";
+async function ghRead(ref) {
+  const j = await gh(repoPath() + "/contents/" + DATA_FILE + (ref ? "?ref=" + ref : ""));
+  if (!j) return null;
+  let text;
+  if (j.encoding === "base64" && j.content) text = b64utf8(j.content);
+  else text = await (await fetch(j.download_url, { cache: "no-store" })).text();
+  return { sha: j.sha, data: JSON.parse(text) };
+}
+const devName = () => { const u = navigator.userAgent; return /iPad/.test(u) ? "iPad" : /iPhone/.test(u) ? "iPhone" : /Android/.test(u) ? "Android" : /Mac/.test(u) ? "Mac" : /Windows/.test(u) ? "Windows" : /Linux/.test(u) ? "Linux" : "เครื่องอื่น"; };
+const nowTh = (d = new Date()) => d.getDate() + "/" + (d.getMonth() + 1) + "/" + (d.getFullYear() + 543) + " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+function snapshot() { return { app: "schoolFinance", version: 1, savedAt: new Date().toISOString(), device: devName(), settings: S, ledger: L }; }
+async function ghWrite(message, sha) {
+  return gh(repoPath() + "/contents/" + DATA_FILE, { method: "PUT", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, content: utf8b64(JSON.stringify(snapshot(), null, 1)), sha: sha || undefined }) });
+}
+
+/* ---- นำข้อมูลเข้าโปรแกรม ---- */
+function applyData(data) {
+  L = data.ledger || {}; lastSavedJson = JSON.stringify(L); UNDO.length = 0; REDO.length = 0;
+  rawWriteLedger(lastSavedJson); updateUndoBtns();
+  if (data.settings) { S = Object.assign(loadSettings(), data.settings); rawSaveSettings(); }
+  renderNav();
+  const cur = document.querySelector("nav button.active");
+  showView(cur && cur.dataset.view ? cur.dataset.view : "home");
+}
+
+/* ---- สำเนาในเครื่อง ---- */
+function localSnap(why, force) {
+  const h = lsGet(LHIST_KEY, []), json = JSON.stringify({ settings: S, ledger: L });
+  if (!force && h.length && (Date.now() - h[0].t < 10 * 60000 || h[0].json === json)) return;
+  if (h.length && h[0].json === json) return;
+  h.unshift({ t: Date.now(), why: why || "บันทึกอัตโนมัติ", json }); h.length = Math.min(h.length, 40); lsSet(LHIST_KEY, h);
+}
+
+/* ---- จับทุกการบันทึก -> ตั้งเวลาซิงก์ ---- */
+const rawWriteLedger = writeLedger, rawSaveSettings = saveSettingsStore;
+writeLedger = function (json) { rawWriteLedger(json); changed(); };
+saveSettingsStore = function () { rawSaveSettings(); changed(); };
+function changed() {
+  if (!A.mode) return;
+  localSnap();
+  if (A.mode !== "github") return;
+  setSync({ dirty: true }); setState("wait");
+  clearTimeout(A.timer); A.timer = setTimeout(push, 6000);
+}
+async function push(message) {
+  if (A.mode !== "github" || !A.token) return;
+  if (A.pushing) { A.again = true; return; }
+  clearTimeout(A.timer); A.pushing = true; setState("busy");
+  try {
+    const si = syncInfo();
+    const r = await ghWrite(message || ("บันทึกอัตโนมัติ " + nowTh() + " (" + devName() + ")"), si.sha);
+    setSync({ sha: r.content.sha, dirty: false, at: Date.now() }); setState("ok");
+  } catch (e) {
+    if (e.status === 409 || e.status === 422) { A.pushing = false; await resolveConflict(); return; }
+    setState("err", e.message);
+  } finally { A.pushing = false; }
+  if (A.again) { A.again = false; push(); }
+}
+async function resolveConflict() {
+  const remote = await ghRead();
+  if (!remote) { setSync({ sha: null }); return push(); }
+  const useRemote = confirm("ข้อมูลบน GitHub ถูกแก้ไขจากอีกเครื่อง (" + (remote.data.device || "") + " " + (remote.data.savedAt ? nowTh(new Date(remote.data.savedAt)) : "") + ")\n\n" +
+    "กด OK = ใช้ข้อมูลล่าสุดจาก GitHub (ข้อมูลของเครื่องนี้จะเก็บเป็นสำเนาในหน้าประวัติ)\nกด Cancel = ใช้ข้อมูลของเครื่องนี้เขียนทับ");
+  if (useRemote) { localSnap("ก่อนรับข้อมูลจากอีกเครื่อง", true); applyData(remote.data); setSync({ sha: remote.sha, dirty: false, at: Date.now() }); setState("ok"); }
+  else { setSync({ sha: remote.sha }); push("เขียนทับด้วยข้อมูลจาก " + devName() + " " + nowTh()); }
+}
+async function pull() {
+  setState("busy");
+  const remote = await ghRead(), si = syncInfo();
+  if (!remote) { await push("เริ่มต้นข้อมูล " + nowTh() + " (" + devName() + ")"); return; }
+  if (remote.sha === si.sha) { if (si.dirty) await push(); else setState("ok"); return; }
+  const localHas = Object.keys(L).length > 0;
+  if (si.dirty && si.sha) { setSync({ sha: si.sha }); A.pushing = false; return resolveConflict(); }
+  if (localHas && !si.sha) {   // เครื่องนี้มีข้อมูลเดิมแต่ยังไม่เคยซิงก์
+    if (!confirm("พบข้อมูลบน GitHub แล้ว (" + (remote.data.savedAt ? nowTh(new Date(remote.data.savedAt)) : "") + ")\n\nกด OK = ใช้ข้อมูลจาก GitHub (ข้อมูลเดิมในเครื่องนี้จะเก็บเป็นสำเนาในหน้าประวัติ)\nกด Cancel = ใช้ข้อมูลในเครื่องนี้เขียนทับ GitHub")) {
+      setSync({ sha: remote.sha }); return push("เขียนทับด้วยข้อมูลจาก " + devName());
+    }
+    localSnap("ข้อมูลเดิมในเครื่องก่อนซิงก์", true);
+  }
+  applyData(remote.data); setSync({ sha: remote.sha, dirty: false, at: Date.now() }); setState("ok");
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && syncInfo().dirty) push(); });
+addEventListener("online", () => { if (syncInfo().dirty) push(); });
+
+/* ---- แถบสถานะในเมนู ---- */
+function setState(st, msg) {
+  A.state = st; const el = document.getElementById("syncSt"); if (!el) return;
+  const si = syncInfo(), t = si.at ? new Date(si.at) : null;
+  const txt = A.mode === "local" ? "💻 เก็บในเครื่องนี้" :
+    st === "busy" ? "กำลังสำรองขึ้น GitHub…" : st === "wait" ? "มีการแก้ไข รอสำรอง…" :
+    st === "err" ? "สำรองไม่สำเร็จ: " + (msg || "") : st === "ok" ? "☁️ สำรองแล้ว " + (t ? String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") : "") : "☁️ GitHub";
+  el.innerHTML = ""; const d = document.createElement("span"); d.className = "dot " + (A.mode === "local" ? "ok" : st === "busy" || st === "wait" ? "busy" : st === "err" ? "err" : "ok");
+  el.append(d, txt); el.title = msg || "";
+}
+
+/* ---- หน้าเข้าสู่ระบบ ---- */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function showLogin() {
+  $("login").hidden = false; document.body.style.overflow = "hidden";
+  const c = $("loginCard");
+  if (!A.cfg) return renderSetup(c);
+  c.innerHTML = '<div class="login-logo">📚</div><h1>เข้าสู่ระบบ</h1><p class="sch">' + esc(S.school) + '<br><small>ฐานข้อมูล: ' + (A.cfg.mode === "github" ? "☁️ GitHub " + esc(A.cfg.repo) : "💻 เครื่องนี้") + '</small></p>' +
+    '<form id="lgForm"><div class="field"><label for="lgPw">รหัสผ่าน</label><input type="password" id="lgPw" autocomplete="current-password" autofocus></div>' +
+    '<div class="err" id="lgErr"></div><button class="btn primary big" id="lgGo">เข้าสู่ระบบ</button></form>' +
+    '<div class="login-foot"><button class="link" id="lgReset">ลืมรหัสผ่าน / เปลี่ยนฐานข้อมูล</button></div>';
+  setTimeout(() => $("lgPw").focus(), 50);
+  $("lgForm").addEventListener("submit", async ev => {
+    ev.preventDefault(); const btn = $("lgGo"); btn.disabled = true; btn.textContent = "กำลังตรวจสอบ…"; $("lgErr").textContent = "";
+    try {
+      const sec = await unseal($("lgPw").value, A.cfg.box);
+      await enter(A.cfg.mode, sec.token);
+    } catch (e) { $("lgErr").textContent = e && e.name === "OperationError" ? "รหัสผ่านไม่ถูกต้อง" : (e.message || String(e)); btn.disabled = false; btn.textContent = "เข้าสู่ระบบ"; }
+  });
+  $("lgReset").addEventListener("click", () => {
+    if (!confirm("ตั้งค่าเข้าสู่ระบบใหม่?\n\nข้อมูลการเงินในเครื่องนี้และบน GitHub ไม่หาย แต่ต้องตั้งรหัสผ่านใหม่ (และใส่ token GitHub ใหม่ถ้าใช้ GitHub)")) return;
+    renderSetup(c, A.cfg);
+  });
+}
+function renderSetup(c, prev) {
+  const isGh = !prev || prev.mode === "github";
+  c.innerHTML = '<div class="login-logo">📚</div><h1>ตั้งค่าเข้าสู่ระบบ</h1><p class="sch">' + esc(S.school) + '</p>' +
+    '<label style="font-weight:700;font-size:19px">เลือกฐานข้อมูล</label>' +
+    '<div class="dbopt"><label><input type="radio" name="db" value="github"' + (isGh ? " checked" : "") + '><b>☁️ GitHub ส่วนตัว</b><small>ใช้ได้หลายเครื่อง สำรองอัตโนมัติ ดูประวัติย้อนหลังได้ ฟรี</small></label>' +
+    '<label><input type="radio" name="db" value="local"' + (!isGh ? " checked" : "") + '><b>💻 เครื่องนี้</b><small>ไม่ต้องใช้อินเทอร์เน็ต ข้อมูลอยู่ในเบราว์เซอร์เครื่องนี้</small></label></div>' +
+    '<div id="ghBox"><div class="field"><label for="suRepo">Repo เก็บข้อมูล (ต้องเป็น Private)</label><input type="text" id="suRepo" placeholder="ชื่อผู้ใช้/school-finance-data" value="' + esc(prev && prev.repo || "") + '"></div>' +
+    '<div class="field"><label for="suTok">GitHub token</label><input type="password" id="suTok" placeholder="github_pat_…" autocomplete="off">' +
+    '<span class="hint note">สร้างที่ <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub › Fine-grained token</a> เลือกเฉพาะ repo ข้อมูล และให้สิทธิ์ <b>Contents: Read and write</b></span></div></div>' +
+    '<div class="row"><div class="field"><label for="suPw">ตั้งรหัสผ่าน</label><input type="password" id="suPw" autocomplete="new-password"></div>' +
+    '<div class="field"><label for="suPw2">ยืนยันรหัสผ่าน</label><input type="password" id="suPw2" autocomplete="new-password"></div></div>' +
+    '<div class="err" id="suErr"></div><button class="btn primary big" id="suGo">เริ่มใช้งาน</button>' +
+    '<p class="note" style="margin:10px 0 0">รหัสผ่านใช้ล็อกโปรแกรมและเข้ารหัส token ที่จำไว้ในเครื่องนี้ ต้องตั้งแยกในแต่ละเครื่อง</p>' +
+    (prev ? '<div class="login-foot"><button class="link" id="suBack">← กลับไปหน้าเข้าสู่ระบบ</button></div>' : "");
+  const sync = () => { $("ghBox").hidden = c.querySelector('input[name=db]:checked').value !== "github"; };
+  c.querySelectorAll("input[name=db]").forEach(r => r.addEventListener("change", sync)); sync();
+  if (prev) $("suBack").addEventListener("click", showLogin);
+  $("suGo").addEventListener("click", async () => {
+    const mode = c.querySelector("input[name=db]:checked").value, pw = $("suPw").value, err = $("suErr"), btn = $("suGo");
+    err.textContent = "";
+    if (pw.length < 4) return (err.textContent = "รหัสผ่านอย่างน้อย 4 ตัว");
+    if (pw !== $("suPw2").value) return (err.textContent = "ยืนยันรหัสผ่านไม่ตรงกัน");
+    let token = null, repo = null;
+    if (mode === "github") {
+      repo = $("suRepo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, "").replace(/\/$/, "");
+      token = $("suTok").value.trim();
+      if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return (err.textContent = "ใส่ repo แบบ ชื่อผู้ใช้/ชื่อrepo");
+      if (!token) return (err.textContent = "ใส่ GitHub token");
+    }
+    btn.disabled = true; btn.textContent = "กำลังตรวจสอบ…";
+    try {
+      if (mode === "github") {
+        A.token = token; A.cfg = { mode, repo };
+        const info = await gh("/repos/" + repo);
+        if (!info) throw new Error("ไม่พบ repo นี้ หรือ token ไม่มีสิทธิ์เข้าถึง");
+        if (!info.private) throw new Error("repo นี้เป็น Public — ข้อมูลการเงินจะเปิดเผยต่อสาธารณะ กรุณาใช้ repo แบบ Private");
+        if (info.permissions && !info.permissions.push) throw new Error("token นี้เขียนข้อมูลลง repo ไม่ได้ (ต้องให้สิทธิ์ Contents: Read and write)");
+      }
+      if (!prev || prev.mode !== mode || prev.repo !== repo) lsSet(SYNC_KEY, { sha: null, dirty: false, at: null });
+      const cfg = { mode, repo, box: await seal(pw, { token }), createdAt: Date.now() };
+      lsSet(AUTH_KEY, cfg); A.cfg = cfg;
+      await enter(mode, token);
+    } catch (e) { A.token = null; err.textContent = e.message || String(e); btn.disabled = false; btn.textContent = "เริ่มใช้งาน"; }
+  });
+}
+async function enter(mode, token) {
+  A.mode = mode; A.token = token;
+  try { sessionStorage.setItem(SESS_KEY, JSON.stringify({ mode, token })); } catch (e) {}
+  $("login").hidden = true; document.body.style.overflow = "";
+  renderSyncBar(); localSnap("เข้าสู่ระบบ");
+  if (mode === "github") { try { await pull(); } catch (e) { setState("err", e.message); } }
+  else setState("ok");
+}
+function logout() {
+  if (A.mode === "github" && syncInfo().dirty && !confirm("ยังมีการแก้ไขที่ยังไม่ได้สำรองขึ้น GitHub (จะสำรองให้เมื่อเข้าสู่ระบบครั้งถัดไป)\nออกจากระบบเลยไหม?")) return;
+  A.mode = null; A.token = null; try { sessionStorage.removeItem(SESS_KEY); } catch (e) {}
+  showView("home"); showLogin();
+}
+function renderSyncBar() {
+  let bar = document.getElementById("syncBar");
+  if (!bar) {
+    bar = document.createElement("div"); bar.className = "sync"; bar.id = "syncBar";
+    bar.innerHTML = '<div class="st" id="syncSt"></div><button id="syncNow">☁️ สำรองตอนนี้</button><button id="syncOut">🚪 ออกจากระบบ</button>';
+    document.querySelector("nav").appendChild(bar);
+    $("syncNow").addEventListener("click", () => { if (A.mode === "github") push("สำรองด้วยตนเอง " + nowTh() + " (" + devName() + ")"); else { localSnap("สำรองด้วยตนเอง", true); setState("ok"); } });
+    $("syncOut").addEventListener("click", logout);
+  }
+  $("syncNow").hidden = false;
+}
+
+/* ---- หน้าประวัติ ---- */
+function renderHistory() {
+  const gh_ = A.mode === "github";
+  $("histDb").textContent = gh_ ? "☁️ " + A.cfg.repo : "💻 เครื่องนี้";
+  $("histSub").textContent = gh_ ? "ทุกครั้งที่บันทึก โปรแกรมสำรองขึ้น GitHub อัตโนมัติ (หลังหยุดพิมพ์ประมาณ 6 วินาที) เลือกกู้คืนเวอร์ชันใดก็ได้" : "ใช้ฐานข้อมูลในเครื่องนี้ ประวัติเป็นสำเนาที่เก็บในเครื่อง (เปลี่ยนเป็น GitHub ได้ที่ ออกจากระบบ › ลืมรหัสผ่าน / เปลี่ยนฐานข้อมูล)";
+  $("histTitle").parentElement.hidden = !gh_;
+  A.histPage = 1; $("histList").innerHTML = "";
+  if (gh_) loadCommits();
+  renderLocalHist();
+}
+async function loadCommits() {
+  const ul = $("histList"), more = $("histMore");
+  try {
+    const list = await gh(repoPath() + "/commits?path=" + DATA_FILE + "&per_page=30&page=" + A.histPage) || [];
+    const sha = syncInfo().sha;
+    list.forEach((c, k) => {
+      const li = document.createElement("li"); if (A.histPage === 1 && k === 0) li.className = "cur";
+      const w = document.createElement("span"); w.className = "when"; w.textContent = nowTh(new Date(c.commit.author.date || c.commit.committer.date));
+      const m = document.createElement("span"); m.className = "what"; m.textContent = c.commit.message;
+      const acts = document.createElement("span"); acts.className = "acts";
+      const b1 = document.createElement("button"); b1.className = "btn"; b1.textContent = "⬇ ดาวน์โหลด";
+      b1.addEventListener("click", async () => { const r = await ghRead(c.sha); download(new Blob([JSON.stringify(r.data, null, 1)], { type: "application/json" }), "ข้อมูลการเงิน_" + w.textContent.replace(/[\/: ]/g, "-") + ".json"); });
+      const b2 = document.createElement("button"); b2.className = "btn primary"; b2.textContent = "↺ กู้คืน";
+      b2.addEventListener("click", async () => {
+        if (!confirm("กู้คืนข้อมูลเป็นเวอร์ชัน " + w.textContent + "?\nข้อมูลปัจจุบันยังอยู่ในประวัติ กู้กลับได้")) return;
+        try { const r = await ghRead(c.sha); localSnap("ก่อนกู้คืน", true); applyData(r.data); await push("กู้คืนจากเวอร์ชัน " + w.textContent); flash($("msgHist"), "กู้คืนแล้ว ✓"); showView("history"); }
+        catch (e) { flash($("msgHist"), e.message, true); }
+      });
+      acts.append(b1, b2); li.append(w, m, acts); ul.appendChild(li);
+    });
+    if (!list.length && A.histPage === 1) ul.innerHTML = '<li class="empty">ยังไม่มีประวัติบน GitHub</li>';
+    more.hidden = list.length < 30;
+  } catch (e) { flash($("msgHist"), e.message, true); }
+}
+function renderLocalHist() {
+  const ul = $("histLocal"); ul.innerHTML = "";
+  const h = lsGet(LHIST_KEY, []);
+  if (!h.length) ul.innerHTML = '<li class="empty">ยังไม่มีสำเนา</li>';
+  h.forEach(s => {
+    const li = document.createElement("li");
+    const w = document.createElement("span"); w.className = "when"; w.textContent = nowTh(new Date(s.t));
+    const m = document.createElement("span"); m.className = "what"; m.textContent = s.why;
+    const acts = document.createElement("span"); acts.className = "acts";
+    const b = document.createElement("button"); b.className = "btn"; b.textContent = "↺ กู้คืน";
+    b.addEventListener("click", () => {
+      if (!confirm("กู้คืนสำเนา " + w.textContent + "?")) return;
+      localSnap("ก่อนกู้คืนสำเนา", true); const d = JSON.parse(s.json); applyData(d); saveLedgerForce(); flash($("msgHist"), "กู้คืนแล้ว ✓"); showView("history");
+    });
+    acts.appendChild(b); li.append(w, m, acts); ul.appendChild(li);
+  });
+}
+function saveLedgerForce() { rawWriteLedger(JSON.stringify(L)); changed(); }
+$("histNow").addEventListener("click", () => { if (A.mode === "github") push("สำรองด้วยตนเอง " + nowTh() + " (" + devName() + ")").then(renderHistory); else { localSnap("สำรองด้วยตนเอง", true); renderHistory(); } flash($("msgHist"), "สำรองแล้ว ✓"); });
+$("histReload").addEventListener("click", renderHistory);
+$("histMore").addEventListener("click", () => { A.histPage++; loadCommits(); });
+
+/* ---- เริ่มโปรแกรม ---- */
+(function start() {
+  let ss = null; try { ss = JSON.parse(sessionStorage.getItem(SESS_KEY)); } catch (e) {}
+  if (A.cfg && ss && ss.mode === A.cfg.mode) { enter(ss.mode, ss.token); return; }   // รีเฟรชหน้าในแท็บเดิม ไม่ต้องล็อกอินซ้ำ
+  showLogin();
+})();
+window.__auth = { A, push, pull, syncInfo, unseal, seal };
+</script>
+
+</body>
+</html>
