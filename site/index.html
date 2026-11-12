@@ -386,7 +386,7 @@ table.st.rp td.link{background:#eef5ee;padding:0 6px;text-align:right}
     <button data-view="register">📒 ทะเบียนคุมเงิน</button>
     <button data-view="report">🧾 รายงานเงินคงเหลือ</button>
     <div class="group">ระบบ</div>
-    <button data-view="history">🕘 ประวัติ / สำรองข้อมูล</button>
+    <button data-view="history">👤 บัญชี / ประวัติ</button>
     <button data-view="settings">⚙️ ตั้งค่า</button>
   </nav>
 
@@ -522,7 +522,7 @@ table.st.rp td.link{background:#eef5ee;padding:0 6px;text-align:right}
 
     <!-- ===== ประวัติ / สำรองข้อมูล ===== -->
     <section id="view-history" hidden>
-      <h1>ประวัติการบันทึก</h1>
+      <h1>บัญชี / ประวัติการบันทึก</h1>
       <p class="sub" id="histSub"></p>
       <div class="card">
         <div class="toolbar">
@@ -532,6 +532,7 @@ table.st.rp td.link{background:#eef5ee;padding:0 6px;text-align:right}
         </div>
         <div class="msg" id="msgHist"></div>
       </div>
+      <div class="card"><h2>👤 บัญชีผู้ใช้</h2><div id="acctBox"></div></div>
       <div class="card"><h2 id="histTitle">เวอร์ชันย้อนหลัง</h2><ul class="hist" id="histList"></ul>
         <div class="toolbar" style="margin-top:8px"><button class="btn" id="histMore" hidden>โหลดเพิ่ม</button></div></div>
       <div class="card"><h2>สำเนาในเครื่องนี้</h2><p class="sub" style="margin:0 0 6px">โปรแกรมเก็บสำเนาอัตโนมัติในเครื่องทุก 10 นาทีที่มีการแก้ไข (สูงสุด 40 ชุด) ใช้กู้คืนได้แม้ไม่มีอินเทอร์เน็ต</p><ul class="hist" id="histLocal"></ul></div>
@@ -24519,17 +24520,18 @@ const b64 = u8 => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s +=
 const unb64 = s => Uint8Array.from(atob(s.replace(/\s/g, "")), c => c.charCodeAt(0));
 const utf8b64 = str => b64(new TextEncoder().encode(str));
 const b64utf8 = s => new TextDecoder().decode(unb64(s));
-async function pwKey(pw, salt) {
+async function pwKey(pw, salt, it) {
   const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
-  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 250000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: it || 250000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
 }
 async function seal(pw, obj) {
   const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await pwKey(pw, salt), new TextEncoder().encode(JSON.stringify(obj)));
-  return { salt: b64(salt), iv: b64(iv), ct: b64(new Uint8Array(ct)) };
+  const it = 600000;
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await pwKey(pw, salt, it), new TextEncoder().encode(JSON.stringify(obj)));
+  return { salt: b64(salt), iv: b64(iv), ct: b64(new Uint8Array(ct)), it };
 }
 async function unseal(pw, box) {
-  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(box.iv) }, await pwKey(pw, unb64(box.salt)), unb64(box.ct));
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(box.iv) }, await pwKey(pw, unb64(box.salt), box.it), unb64(box.ct));
   return JSON.parse(new TextDecoder().decode(pt));
 }
 
@@ -24559,7 +24561,7 @@ async function ghRead(ref) {
   else text = await (await fetch(j.download_url, { cache: "no-store" })).text();
   return { sha: j.sha, data: JSON.parse(text) };
 }
-const devName = () => { const u = navigator.userAgent; return /iPad/.test(u) ? "iPad" : /iPhone/.test(u) ? "iPhone" : /Android/.test(u) ? "Android" : /Mac/.test(u) ? "Mac" : /Windows/.test(u) ? "Windows" : /Linux/.test(u) ? "Linux" : "เครื่องอื่น"; };
+const devName = () => { const u = navigator.userAgent; return /iPad/.test(u) ? "iPad" : /iPhone/.test(u) ? "iPhone" : /Android/.test(u) ? "Android" : /Mac/.test(u) ? "Mac" : /Windows/.test(u) ? "Windows" : "เครื่องอื่น"; };
 const nowTh = (d = new Date()) => d.getDate() + "/" + (d.getMonth() + 1) + "/" + (d.getFullYear() + 543) + " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
 function snapshot() { return { app: "schoolFinance", version: 1, savedAt: new Date().toISOString(), device: devName(), settings: S, ledger: L }; }
 async function ghWrite(message, sha) {
@@ -24647,72 +24649,113 @@ function setState(st, msg) {
   el.append(d, txt); el.title = msg || "";
 }
 
+/* ---- บัญชีผู้ใช้ (เข้าได้จากทุกเครื่อง) ----
+   เก็บ token ที่เข้ารหัสด้วยรหัสผ่านของผู้ใช้ไว้ใน repo ของโปรแกรม: accounts/<sha256(ชื่อผู้ใช้)>.json
+   อ่านได้โดยไม่ต้องมี token แต่ถอดรหัสได้เฉพาะคนที่รู้รหัสผ่าน */
+const APP_REPO = (() => {
+  const h = location.hostname, m = h.match(/^([\w-]+)\.github\.io$/i), seg = location.pathname.split("/").filter(Boolean)[0];
+  return m && seg ? m[1] + "/" + seg : "pollycode1/school-finance";
+})();
+const normUser = u => String(u || "").trim().toLowerCase();
+async function userFile(u) {
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("schoolFinance:" + normUser(u)));
+  return "accounts/" + Array.from(new Uint8Array(h), b => b.toString(16).padStart(2, "0")).join("") + ".json";
+}
+async function fetchAccount(u) {
+  const r = await fetch("https://api.github.com/repos/" + APP_REPO + "/contents/" + await userFile(u) + "?t=" + Date.now(), { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
+  if (r.status === 404) return null;
+  if (r.status === 403) throw new Error("เข้าสู่ระบบถี่เกินไป (GitHub จำกัด 60 ครั้ง/ชั่วโมง) ลองใหม่ภายหลัง");
+  if (!r.ok) throw new Error("ติดต่อ GitHub ไม่ได้ (" + r.status + ") ตรวจอินเทอร์เน็ต");
+  const j = await r.json(); return { sha: j.sha, rec: JSON.parse(b64utf8(j.content)) };
+}
+async function writeAccount(u, pw, overwrite) {
+  const path = await userFile(u);
+  const cur = await gh("/repos/" + APP_REPO + "/contents/" + path);
+  if (cur && !overwrite) throw Object.assign(new Error("มีชื่อผู้ใช้นี้แล้ว"), { exists: true });
+  const rec = { v: 1, mode: "github", repo: A.cfg.repo, box: await seal(pw, { token: A.token }), updatedAt: new Date().toISOString() };
+  await gh("/repos/" + APP_REPO + "/contents/" + path, { method: "PUT", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: "บัญชีผู้ใช้: " + (cur ? "เปลี่ยนรหัสผ่าน" : "เพิ่มผู้ใช้") + " " + nowTh(), content: utf8b64(JSON.stringify(rec)), sha: cur ? cur.sha : undefined }) });
+  return rec;
+}
+async function canWriteApp() { const info = await gh("/repos/" + APP_REPO); return !!(info && info.permissions && info.permissions.push); }
+const TOKEN_HELP = "แก้ token ที่ https://github.com/settings/personal-access-tokens ให้เลือก repo เพิ่มอีกอัน คือ " + APP_REPO + " (Contents: Read and write)";
+
 /* ---- หน้าเข้าสู่ระบบ ---- */
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 function showLogin() {
   $("login").hidden = false; document.body.style.overflow = "hidden";
   const c = $("loginCard");
-  if (!A.cfg) return renderSetup(c);
-  c.innerHTML = '<div class="login-logo">📚</div><h1>เข้าสู่ระบบ</h1><p class="sch">' + esc(S.school) + '<br><small>ฐานข้อมูล: ' + (A.cfg.mode === "github" ? "☁️ GitHub " + esc(A.cfg.repo) : "💻 เครื่องนี้") + '</small></p>' +
-    '<form id="lgForm"><div class="field"><label for="lgPw">รหัสผ่าน</label><input type="password" id="lgPw" autocomplete="current-password" autofocus></div>' +
+  c.innerHTML = '<div class="login-logo">📚</div><h1>เข้าสู่ระบบ</h1><p class="sch">' + esc(S.school) + '<br><small>โปรแกรมการเงินโรงเรียน</small></p>' +
+    '<form id="lgForm"><div class="field"><label for="lgUser">ชื่อผู้ใช้</label><input type="text" id="lgUser" autocomplete="username" autocapitalize="none" spellcheck="false" value="' + esc(A.cfg && A.cfg.user || "") + '"></div>' +
+    '<div class="field"><label for="lgPw">รหัสผ่าน</label><input type="password" id="lgPw" autocomplete="current-password"></div>' +
     '<div class="err" id="lgErr"></div><button class="btn primary big" id="lgGo">เข้าสู่ระบบ</button></form>' +
-    '<div class="login-foot"><button class="link" id="lgReset">ลืมรหัสผ่าน / เปลี่ยนฐานข้อมูล</button></div>';
-  setTimeout(() => $("lgPw").focus(), 50);
+    '<div class="login-foot"><button class="link" id="lgNew">＋ สร้างบัญชีใหม่ (ครั้งแรก)</button><button class="link" id="lgLocal">💻 ใช้แบบออฟไลน์ในเครื่องนี้</button></div>';
+  setTimeout(() => $(A.cfg && A.cfg.user ? "lgPw" : "lgUser").focus(), 50);
   $("lgForm").addEventListener("submit", async ev => {
-    ev.preventDefault(); const btn = $("lgGo"); btn.disabled = true; btn.textContent = "กำลังตรวจสอบ…"; $("lgErr").textContent = "";
+    ev.preventDefault(); const btn = $("lgGo"), err = $("lgErr"), u = $("lgUser").value.trim(), pw = $("lgPw").value;
+    err.textContent = ""; btn.disabled = true; btn.textContent = "กำลังตรวจสอบ…";
     try {
-      const sec = await unseal($("lgPw").value, A.cfg.box);
+      const local = A.cfg && normUser(A.cfg.user) === normUser(u) ? A.cfg : null;
+      let sec = null;
+      if (local) { try { sec = await unseal(pw, local.box); } catch (e) { if (local.mode === "local") throw new Error("รหัสผ่านไม่ถูกต้อง"); } }
+      if (sec) return await enter(local.mode, sec.token);
+      if (!u) throw new Error("ใส่ชื่อผู้ใช้");
+      const acc = await fetchAccount(u);
+      if (!acc) throw new Error("ไม่พบชื่อผู้ใช้นี้");
+      try { sec = await unseal(pw, acc.rec.box); } catch (e) { throw new Error("รหัสผ่านไม่ถูกต้อง"); }
+      if (!A.cfg || A.cfg.repo !== acc.rec.repo) lsSet(SYNC_KEY, { sha: null, dirty: false, at: null });
+      A.cfg = { user: u, mode: acc.rec.mode || "github", repo: acc.rec.repo, box: acc.rec.box };
+      lsSet(AUTH_KEY, A.cfg);   // จำไว้ในเครื่องนี้ ครั้งหน้าเข้าได้แม้ออฟไลน์
       await enter(A.cfg.mode, sec.token);
-    } catch (e) { $("lgErr").textContent = e && e.name === "OperationError" ? "รหัสผ่านไม่ถูกต้อง" : (e.message || String(e)); btn.disabled = false; btn.textContent = "เข้าสู่ระบบ"; }
+    } catch (e) { err.textContent = e.message || String(e); btn.disabled = false; btn.textContent = "เข้าสู่ระบบ"; }
   });
-  $("lgReset").addEventListener("click", () => {
-    if (!confirm("ตั้งค่าเข้าสู่ระบบใหม่?\n\nข้อมูลการเงินในเครื่องนี้และบน GitHub ไม่หาย แต่ต้องตั้งรหัสผ่านใหม่ (และใส่ token GitHub ใหม่ถ้าใช้ GitHub)")) return;
-    renderSetup(c, A.cfg);
-  });
+  $("lgNew").addEventListener("click", () => renderSetup(c, "github"));
+  $("lgLocal").addEventListener("click", () => renderSetup(c, "local"));
 }
-function renderSetup(c, prev) {
-  const isGh = !prev || prev.mode === "github";
-  c.innerHTML = '<div class="login-logo">📚</div><h1>ตั้งค่าเข้าสู่ระบบ</h1><p class="sch">' + esc(S.school) + '</p>' +
-    '<label style="font-weight:700;font-size:19px">เลือกฐานข้อมูล</label>' +
-    '<div class="dbopt"><label><input type="radio" name="db" value="github"' + (isGh ? " checked" : "") + '><b>☁️ GitHub ส่วนตัว</b><small>ใช้ได้หลายเครื่อง สำรองอัตโนมัติ ดูประวัติย้อนหลังได้ ฟรี</small></label>' +
-    '<label><input type="radio" name="db" value="local"' + (!isGh ? " checked" : "") + '><b>💻 เครื่องนี้</b><small>ไม่ต้องใช้อินเทอร์เน็ต ข้อมูลอยู่ในเบราว์เซอร์เครื่องนี้</small></label></div>' +
-    '<div id="ghBox"><div class="field"><label for="suRepo">Repo เก็บข้อมูล (ต้องเป็น Private)</label><input type="text" id="suRepo" placeholder="ชื่อผู้ใช้/school-finance-data" value="' + esc(prev && prev.repo || "") + '"></div>' +
+function renderSetup(c, mode) {
+  const isGh = mode === "github";
+  c.innerHTML = '<div class="login-logo">' + (isGh ? "☁️" : "💻") + '</div><h1>' + (isGh ? "สร้างบัญชีใหม่" : "ใช้แบบออฟไลน์ในเครื่องนี้") + '</h1>' +
+    '<p class="sch">' + (isGh ? "ทำครั้งเดียว แล้วเข้าจากเครื่องไหนก็ได้ด้วยชื่อผู้ใช้กับรหัสผ่าน ข้อมูลเก็บใน GitHub ส่วนตัว สำรองอัตโนมัติ" : "ข้อมูลอยู่ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่ซิงก์ไปเครื่องอื่น") + '</p>' +
+    (isGh ? '<div class="field"><label for="suRepo">Repo เก็บข้อมูล (Private)</label><input type="text" id="suRepo" value="' + esc(A.cfg && A.cfg.repo || APP_REPO + "-data") + '"></div>' +
     '<div class="field"><label for="suTok">GitHub token</label><input type="password" id="suTok" placeholder="github_pat_…" autocomplete="off">' +
-    '<span class="hint note">สร้างที่ <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub › Fine-grained token</a> เลือกเฉพาะ repo ข้อมูล และให้สิทธิ์ <b>Contents: Read and write</b></span></div></div>' +
+    '<span class="hint note">ใช้ครั้งเดียวตอนสร้างบัญชี token ต้องเลือก 2 repo คือ <b>' + esc(APP_REPO) + '-data</b> และ <b>' + esc(APP_REPO) + '</b> สิทธิ์ Contents: Read and write (<a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">จัดการ token</a>)</span></div>' : "") +
+    '<div class="field"><label for="suUser">ตั้งชื่อผู้ใช้</label><input type="text" id="suUser" autocomplete="username" autocapitalize="none" spellcheck="false"></div>' +
     '<div class="row"><div class="field"><label for="suPw">ตั้งรหัสผ่าน</label><input type="password" id="suPw" autocomplete="new-password"></div>' +
     '<div class="field"><label for="suPw2">ยืนยันรหัสผ่าน</label><input type="password" id="suPw2" autocomplete="new-password"></div></div>' +
-    '<div class="err" id="suErr"></div><button class="btn primary big" id="suGo">เริ่มใช้งาน</button>' +
-    '<p class="note" style="margin:10px 0 0">รหัสผ่านใช้ล็อกโปรแกรมและเข้ารหัส token ที่จำไว้ในเครื่องนี้ ต้องตั้งแยกในแต่ละเครื่อง</p>' +
-    (prev ? '<div class="login-foot"><button class="link" id="suBack">← กลับไปหน้าเข้าสู่ระบบ</button></div>' : "");
-  const sync = () => { $("ghBox").hidden = c.querySelector('input[name=db]:checked').value !== "github"; };
-  c.querySelectorAll("input[name=db]").forEach(r => r.addEventListener("change", sync)); sync();
-  if (prev) $("suBack").addEventListener("click", showLogin);
+    (isGh ? '<p class="note" style="margin:0">รหัสผ่านอย่างน้อย 8 ตัว ควรมีตัวอักษรผสมตัวเลข (รหัสผ่านใช้ปลดล็อกบัญชีจากเครื่องไหนก็ได้)</p>' : "") +
+    '<div class="err" id="suErr"></div><button class="btn primary big" id="suGo">' + (isGh ? "สร้างบัญชีและเริ่มใช้งาน" : "เริ่มใช้งาน") + '</button>' +
+    '<div class="login-foot"><button class="link" id="suBack">← กลับไปหน้าเข้าสู่ระบบ</button></div>';
+  $("suBack").addEventListener("click", showLogin);
+  setTimeout(() => (isGh ? $("suTok") : $("suUser")).focus(), 50);
   $("suGo").addEventListener("click", async () => {
-    const mode = c.querySelector("input[name=db]:checked").value, pw = $("suPw").value, err = $("suErr"), btn = $("suGo");
+    const u = $("suUser").value.trim(), pw = $("suPw").value, err = $("suErr"), btn = $("suGo");
     err.textContent = "";
-    if (pw.length < 4) return (err.textContent = "รหัสผ่านอย่างน้อย 4 ตัว");
+    if (!/^[\w.@-]{3,40}$/.test(u)) return (err.textContent = "ชื่อผู้ใช้ใช้ a-z 0-9 . _ - อย่างน้อย 3 ตัว");
+    if (pw.length < (isGh ? 8 : 4)) return (err.textContent = "รหัสผ่านอย่างน้อย " + (isGh ? 8 : 4) + " ตัว");
     if (pw !== $("suPw2").value) return (err.textContent = "ยืนยันรหัสผ่านไม่ตรงกัน");
-    let token = null, repo = null;
-    if (mode === "github") {
-      repo = $("suRepo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, "").replace(/\/$/, "");
-      token = $("suTok").value.trim();
-      if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return (err.textContent = "ใส่ repo แบบ ชื่อผู้ใช้/ชื่อrepo");
-      if (!token) return (err.textContent = "ใส่ GitHub token");
-    }
     btn.disabled = true; btn.textContent = "กำลังตรวจสอบ…";
     try {
-      if (mode === "github") {
-        A.token = token; A.cfg = { mode, repo };
+      let token = null, repo = null;
+      if (isGh) {
+        repo = $("suRepo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, "").replace(/\/$/, "");
+        token = $("suTok").value.trim();
+        if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) throw new Error("ใส่ repo แบบ ชื่อผู้ใช้/ชื่อrepo");
+        if (!token) throw new Error("ใส่ GitHub token");
+        A.token = token; A.cfg = { mode: "github", repo };
         const info = await gh("/repos/" + repo);
-        if (!info) throw new Error("ไม่พบ repo นี้ หรือ token ไม่มีสิทธิ์เข้าถึง");
-        if (!info.private) throw new Error("repo นี้เป็น Public — ข้อมูลการเงินจะเปิดเผยต่อสาธารณะ กรุณาใช้ repo แบบ Private");
-        if (info.permissions && !info.permissions.push) throw new Error("token นี้เขียนข้อมูลลง repo ไม่ได้ (ต้องให้สิทธิ์ Contents: Read and write)");
+        if (!info) throw new Error("ไม่พบ repo ข้อมูล หรือ token ไม่มีสิทธิ์เข้าถึง");
+        if (!info.private) throw new Error("repo ข้อมูลเป็น Public — ข้อมูลการเงินจะเปิดเผย กรุณาใช้ repo แบบ Private");
+        if (info.permissions && !info.permissions.push) throw new Error("token เขียนข้อมูลลง repo ข้อมูลไม่ได้ (ต้องให้สิทธิ์ Contents: Read and write)");
+        if (!await canWriteApp()) throw new Error("token ยังไม่มีสิทธิ์บันทึกบัญชีผู้ใช้ — " + TOKEN_HELP);
+        try { await writeAccount(u, pw, false); }
+        catch (e) { if (!e.exists) throw e; if (!confirm("มีชื่อผู้ใช้ \"" + u + "\" อยู่แล้ว ต้องการตั้งรหัสผ่านใหม่ให้ชื่อนี้ไหม?")) throw new Error("เลือกชื่อผู้ใช้อื่น"); await writeAccount(u, pw, true); }
       }
-      if (!prev || prev.mode !== mode || prev.repo !== repo) lsSet(SYNC_KEY, { sha: null, dirty: false, at: null });
-      const cfg = { mode, repo, box: await seal(pw, { token }), createdAt: Date.now() };
+      const prev = A.cfg && A.cfg.box ? A.cfg : lsGet(AUTH_KEY, null);
+      if (!prev || prev.mode !== (isGh ? "github" : "local") || prev.repo !== repo) lsSet(SYNC_KEY, { sha: null, dirty: false, at: null });
+      const cfg = { user: u, mode: isGh ? "github" : "local", repo, box: await seal(pw, { token }), createdAt: Date.now() };
       lsSet(AUTH_KEY, cfg); A.cfg = cfg;
-      await enter(mode, token);
-    } catch (e) { A.token = null; err.textContent = e.message || String(e); btn.disabled = false; btn.textContent = "เริ่มใช้งาน"; }
+      await enter(cfg.mode, token);
+    } catch (e) { A.token = null; A.cfg = lsGet(AUTH_KEY, null); err.textContent = e.message || String(e); btn.disabled = false; btn.textContent = isGh ? "สร้างบัญชีและเริ่มใช้งาน" : "เริ่มใช้งาน"; }
   });
 }
 async function enter(mode, token) {
@@ -24741,7 +24784,34 @@ function renderSyncBar() {
 }
 
 /* ---- หน้าประวัติ ---- */
+function renderAccount() {
+  const box = $("acctBox"); if (!box) return;
+  const gh_ = A.mode === "github";
+  box.innerHTML = '<p style="margin:0 0 8px">ผู้ใช้: <b>' + esc(A.cfg && A.cfg.user || "-") + '</b> • ' + (gh_ ? "เข้าได้จากทุกเครื่องด้วยชื่อผู้ใช้และรหัสผ่าน" : "ใช้ในเครื่องนี้เท่านั้น") + '</p>' +
+    (gh_ ? '<div class="row"><div class="field"><label for="acNew1">เปลี่ยนรหัสผ่าน: รหัสใหม่</label><input type="password" id="acNew1" autocomplete="new-password"></div><div class="field"><label for="acNew2">ยืนยันรหัสใหม่</label><input type="password" id="acNew2" autocomplete="new-password"></div></div>' +
+    '<div class="toolbar"><button class="btn primary" id="acChange">เปลี่ยนรหัสผ่าน</button></div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0">' +
+    '<div class="row"><div class="field"><label for="acU">เพิ่มผู้ใช้ (เช่น เจ้าหน้าที่การเงิน): ชื่อผู้ใช้</label><input type="text" id="acU" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="acP">รหัสผ่าน (อย่างน้อย 8 ตัว)</label><input type="password" id="acP" autocomplete="new-password"></div></div>' +
+    '<div class="toolbar"><button class="btn" id="acAdd">＋ เพิ่มผู้ใช้</button></div><div class="msg" id="msgAcct"></div>' : "");
+  if (!gh_) return;
+  const m = (t, e) => flash($("msgAcct"), t, e);
+  $("acChange").addEventListener("click", async () => {
+    const a = $("acNew1").value; if (a.length < 8) return m("รหัสผ่านอย่างน้อย 8 ตัว", true); if (a !== $("acNew2").value) return m("ยืนยันรหัสไม่ตรงกัน", true);
+    try {
+      if (!await canWriteApp()) throw new Error(TOKEN_HELP);
+      await writeAccount(A.cfg.user, a, true);
+      A.cfg.box = await seal(a, { token: A.token }); lsSet(AUTH_KEY, A.cfg);
+      $("acNew1").value = $("acNew2").value = ""; m("เปลี่ยนรหัสผ่านแล้ว ✓ ใช้รหัสใหม่ได้ทุกเครื่อง");
+    } catch (e) { m(e.message, true); }
+  });
+  $("acAdd").addEventListener("click", async () => {
+    const u = $("acU").value.trim(), p = $("acP").value;
+    if (!/^[\w.@-]{3,40}$/.test(u)) return m("ชื่อผู้ใช้ใช้ a-z 0-9 . _ - อย่างน้อย 3 ตัว", true); if (p.length < 8) return m("รหัสผ่านอย่างน้อย 8 ตัว", true);
+    try { if (!await canWriteApp()) throw new Error(TOKEN_HELP); await writeAccount(u, p, false); $("acU").value = $("acP").value = ""; m("เพิ่มผู้ใช้ \"" + u + "\" แล้ว ✓"); }
+    catch (e) { m(e.message, true); }
+  });
+}
 function renderHistory() {
+  renderAccount();
   const gh_ = A.mode === "github";
   $("histDb").textContent = gh_ ? "☁️ " + A.cfg.repo : "💻 เครื่องนี้";
   $("histSub").textContent = gh_ ? "ทุกครั้งที่บันทึก โปรแกรมสำรองขึ้น GitHub อัตโนมัติ (หลังหยุดพิมพ์ประมาณ 6 วินาที) เลือกกู้คืนเวอร์ชันใดก็ได้" : "ใช้ฐานข้อมูลในเครื่องนี้ ประวัติเป็นสำเนาที่เก็บในเครื่อง (เปลี่ยนเป็น GitHub ได้ที่ ออกจากระบบ › ลืมรหัสผ่าน / เปลี่ยนฐานข้อมูล)";
