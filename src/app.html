@@ -2239,6 +2239,7 @@ window.__reg = { monthData, registerPages, buildRegisterDocx, pagesToPdf, regPag
    - รหัสผ่านใช้ปลดล็อก token ที่เข้ารหัส (AES-GCM + PBKDF2) เก็บไว้ในเครื่อง
    - GitHub: ข้อมูลทั้งหมดอยู่ในไฟล์ JSON เดียวใน repo ส่วนตัว ทุกการบันทึก = 1 commit = ประวัติย้อนหลัง
    ================================================================ */
+const OFFLINE_ONLY = /*OFFLINE*/false;   // รุ่นออฟไลน์อย่างเดียว: ไม่มีหน้าเข้าสู่ระบบ ไม่เชื่อมอินเทอร์เน็ต
 const AUTH_KEY = "schoolFinance.auth.v1", SYNC_KEY = "schoolFinance.sync.v1", LHIST_KEY = "schoolFinance.history.v1", SESS_KEY = "schoolFinance.session";
 const A = { cfg: null, token: null, mode: null, timer: null, pushing: false, again: false, state: "idle", last: null, histPage: 1 };
 const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
@@ -2494,7 +2495,7 @@ async function enter(mode, token) {
   A.mode = mode; A.token = token;
   try { sessionStorage.setItem(SESS_KEY, JSON.stringify({ mode, token })); } catch (e) {}
   $("login").hidden = true; document.body.style.overflow = "";
-  renderSyncBar(); localSnap("เข้าสู่ระบบ");
+  renderSyncBar(); localSnap(OFFLINE_ONLY ? "เปิดโปรแกรม" : "เข้าสู่ระบบ");
   if (mode === "github") { try { await pull(); } catch (e) { setState("err", e.message); } }
   else setState("ok");
 }
@@ -2512,12 +2513,14 @@ function renderSyncBar() {
     $("syncNow").addEventListener("click", () => { if (A.mode === "github") push("สำรองด้วยตนเอง " + nowTh() + " (" + devName() + ")"); else { localSnap("สำรองด้วยตนเอง", true); setState("ok"); } });
     $("syncOut").addEventListener("click", logout);
   }
+  $("syncOut").hidden = OFFLINE_ONLY;
   $("syncNow").hidden = false;
 }
 
 /* ---- หน้าประวัติ ---- */
 function renderAccount() {
   const box = $("acctBox"); if (!box) return;
+  box.parentElement.hidden = OFFLINE_ONLY; if (OFFLINE_ONLY) return;
   const gh_ = A.mode === "github";
   box.innerHTML = '<p style="margin:0 0 8px">ผู้ใช้: <b>' + esc(A.cfg && A.cfg.user || "-") + '</b> • ' + (gh_ ? "เข้าได้จากทุกเครื่องด้วยชื่อผู้ใช้และรหัสผ่าน" : "ใช้ในเครื่องนี้เท่านั้น") + '</p>' +
     (gh_ ? '<div class="row"><div class="field"><label for="acNew1">เปลี่ยนรหัสผ่าน: รหัสใหม่</label><input type="password" id="acNew1" autocomplete="new-password"></div><div class="field"><label for="acNew2">ยืนยันรหัสใหม่</label><input type="password" id="acNew2" autocomplete="new-password"></div></div>' +
@@ -2546,7 +2549,7 @@ function renderHistory() {
   renderAccount();
   const gh_ = A.mode === "github";
   $("histDb").textContent = gh_ ? "☁️ " + A.cfg.repo : "💻 เครื่องนี้";
-  $("histSub").textContent = gh_ ? "ทุกครั้งที่บันทึก โปรแกรมสำรองขึ้น GitHub อัตโนมัติ (หลังหยุดพิมพ์ประมาณ 6 วินาที) เลือกกู้คืนเวอร์ชันใดก็ได้" : "ใช้ฐานข้อมูลในเครื่องนี้ ประวัติเป็นสำเนาที่เก็บในเครื่อง (เปลี่ยนเป็น GitHub ได้ที่ ออกจากระบบ › ลืมรหัสผ่าน / เปลี่ยนฐานข้อมูล)";
+  $("histSub").textContent = gh_ ? "ทุกครั้งที่บันทึก โปรแกรมสำรองขึ้น GitHub อัตโนมัติ (หลังหยุดพิมพ์ประมาณ 6 วินาที) เลือกกู้คืนเวอร์ชันใดก็ได้" : (OFFLINE_ONLY ? "รุ่นออฟไลน์: ข้อมูลอยู่ในเบราว์เซอร์เครื่องนี้ ควรกด ตั้งค่า › ⬇ สำรองข้อมูล (.json) เก็บไฟล์ไว้ใน USB หรือ Drive เป็นระยะ ย้ายเครื่องก็นำเข้าไฟล์นี้ได้" : "ใช้ฐานข้อมูลในเครื่องนี้ ประวัติเป็นสำเนาที่เก็บในเครื่อง");
   $("histTitle").parentElement.hidden = !gh_;
   A.histPage = 1; $("histList").innerHTML = "";
   if (gh_) loadCommits();
@@ -2594,12 +2597,19 @@ function renderLocalHist() {
   });
 }
 function saveLedgerForce() { rawWriteLedger(JSON.stringify(L)); changed(); }
-$("histNow").addEventListener("click", () => { if (A.mode === "github") push("สำรองด้วยตนเอง " + nowTh() + " (" + devName() + ")").then(renderHistory); else { localSnap("สำรองด้วยตนเอง", true); renderHistory(); } flash($("msgHist"), "สำรองแล้ว ✓"); });
+$("histNow").addEventListener("click", () => { if (OFFLINE_ONLY) { localSnap("สำรองด้วยตนเอง", true); $("backupBtn").click(); renderHistory(); return; } if (A.mode === "github") push("สำรองด้วยตนเอง " + nowTh() + " (" + devName() + ")").then(renderHistory); else { localSnap("สำรองด้วยตนเอง", true); renderHistory(); } flash($("msgHist"), "สำรองแล้ว ✓"); });
 $("histReload").addEventListener("click", renderHistory);
 $("histMore").addEventListener("click", () => { A.histPage++; loadCommits(); });
 
 /* ---- เริ่มโปรแกรม ---- */
 (function start() {
+  if (OFFLINE_ONLY) {
+    const hb = document.querySelector('nav button[data-view="history"]'); if (hb) hb.textContent = "🕘 ประวัติ / สำรองข้อมูล";
+    const lg = document.querySelector("nav .logo"); if (lg) lg.firstChild.textContent = "โปรแกรมการเงิน (ออฟไลน์)";
+    const h1 = document.querySelector("#view-history h1"); if (h1) h1.textContent = "ประวัติ / สำรองข้อมูล";
+    $("histNow").textContent = "⬇ ดาวน์โหลดไฟล์สำรอง (.json)";
+    A.cfg = { user: "", mode: "local" }; enter("local", null); return;
+  }
   let ss = null; try { ss = JSON.parse(sessionStorage.getItem(SESS_KEY)); } catch (e) {}
   if (A.cfg && ss && ss.mode === A.cfg.mode) { enter(ss.mode, ss.token); return; }   // รีเฟรชหน้าในแท็บเดิม ไม่ต้องล็อกอินซ้ำ
   showLogin();
