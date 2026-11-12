@@ -308,6 +308,9 @@ table.st.rp td.link{background:#eef5ee;padding:0 6px;text-align:right}
 .hist li .what{color:var(--muted);flex:1;min-width:160px}
 .hist li .acts{display:flex;gap:6px}
 .hist li.cur .when::after{content:" (ล่าสุด)";color:var(--brand);font-weight:400}
+.credit{text-align:right;margin-top:14px;font-size:18px;color:var(--muted);font-style:italic}
+.credit b{color:#7a5a2a;font-weight:700}
+.login-credit{position:fixed;right:16px;bottom:10px;color:#c9d5ea;font-size:17px;font-style:italic;opacity:.85}
 /* ===== มือถือ / แท็บเล็ต ===== */
 .book,.btn,nav button,.gbtn,.months button{touch-action:manipulation}
 .sheet .sig{min-width:1150px}
@@ -376,6 +379,7 @@ table.st.rp td.link{background:#eef5ee;padding:0 6px;text-align:right}
 <body>
 <div class="login" id="login" hidden>
   <div class="login-card" id="loginCard"></div>
+  <div class="login-credit">สร้างโดย ครูฉัตรเพชร สุริยวงค์</div>
 </div>
 <div class="app">
   <nav>
@@ -398,6 +402,7 @@ table.st.rp td.link{background:#eef5ee;padding:0 6px;text-align:right}
         <div class="home-fy" id="homeFy"></div>
       </div>
       <div class="bookcase" id="bookcase"></div>
+      <div class="credit">✍️ สร้างโดย <b>ครูฉัตรเพชร สุริยวงค์</b></div>
     </section>
 
     <!-- ===== หน้าปก ===== -->
