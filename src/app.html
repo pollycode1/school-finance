@@ -1111,6 +1111,12 @@ function fyOpening(typeId, fy, depth = 0) {
   if (depth < 60 && openingIsAuto(typeId, fy)) return fyClosing(typeId, fy - 1, depth + 1);
   return Object.assign(zero(), book(typeId, fy).opening);
 }
+/* บัญชีที่ผู้ใช้กรอกยอดยกมาเอง (รวมกรอก 0) ต้องแสดงตัวเลขแม้เป็น 0.00 */
+function openSetAccts(typeId, fy) {
+  if (openingIsAuto(typeId, fy)) return [];
+  const s = book(typeId, fy).openSet || {};
+  return ACCTS.filter(a => s[a]);
+}
 /* เรียงตามเดือน แล้วตามลำดับที่กรอกในตาราง (ผู้ใช้จัดลำดับเองได้) */
 function sortedEntries(b) { return b.entries.slice().sort((x, y) => (monthIdx(x.date) - monthIdx(y.date)) || ((x.seq || 0) - (y.seq || 0))); }
 function fyClosing(typeId, fy, depth = 0) {
@@ -1134,7 +1140,7 @@ function monthData(typeId, fy, mi) {
     if (idx === mi) { sum[isPay(e) ? "pay" : "rec"] += e.amt; rows.push({ e, bal: Object.assign({}, bal) }); }
   }
   if (!opening) opening = Object.assign({}, bal);
-  return { opening, rows, sum, cum, closing: Object.assign({}, bal), def: defAcct(typeId) };
+  return { opening, rows, sum, cum, closing: Object.assign({}, bal), def: defAcct(typeId), openShow: openSetAccts(typeId, fy) };
 }
 /* วันที่ลงนาม: วันสุดท้ายของเดือน ถ้าตรงเสาร์-อาทิตย์เลื่อนเป็นวันศุกร์ (ปิดได้ในตั้งค่า) หรือวันที่ที่แก้เอง */
 function autoSignDay(fy, mi) {
@@ -1155,7 +1161,8 @@ const COLS_MM = [23, 34, 61, 26, 26, 17, 27, 25, 28];   // รวม 267 มม.
 const NCOL = 9;
 function balCells(bal, force, def) {
   const any = ACCTS.some(a => bal[a]);
-  return ACCTS.map(a => (bal[a] || a === force || (!any && a === (def || "bank"))) ? fmt(bal[a]) : "");
+  const forced = a => Array.isArray(force) ? force.includes(a) : a === force;
+  return ACCTS.map(a => (bal[a] || forced(a) || (!any && a === (def || "bank"))) ? fmt(bal[a]) : "");
 }
 /* ---- ตัดข้อความตามความกว้างช่อง (วัดด้วยฟอนต์ TH SarabunPSK 16pt เหมือนตอนพิมพ์) ---- */
 let _measureCtx = null;
@@ -1200,7 +1207,7 @@ const fieldLines = (e, f) => { const a = String(e[f] || "").split("\n"); return 
 function registerLines(md, fy, mi, spacer) {
   const lines = [];
   const blank = () => ({ c: Array(NCOL).fill(""), blank: true });
-  lines.push({ c: ["1/" + calMonth(mi) + "/" + beYear(fy, mi), "", carryText(fy, mi), "", "", ...balCells(md.opening, null, md.def), ""], bold: true });
+  lines.push({ c: ["1/" + calMonth(mi) + "/" + beYear(fy, mi), "", carryText(fy, mi), "", "", ...balCells(md.opening, md.openShow, md.def), ""], bold: true });
   for (const { e, bal } of md.rows) {
     if (spacer) lines.push(blank());
     const desc = wrapLines((e.desc || "").split("\n").map(s => s.trim()).filter((s, i) => s || i === 0), 2);
@@ -1463,9 +1470,9 @@ function renderSheet(focus) {
   cr.append(td("autol c", "1/" + calMonth(R.mi) + "/" + beYear(R.fy, R.mi)), td("autol", ""), td("autol", carryText(R.fy, R.mi)), td("auto"), td("auto"));
   const manualOpen = R.mi === 0 && !openingIsAuto(R.typeId, R.fy);
   if (manualOpen) {
-    const o = book(R.typeId, R.fy).opening;
-    ACCTS.forEach(a => { const c = inp("n", "o-" + a, o[a] ? fmt(o[a]) : "", a === defAcct(R.typeId) ? "กรอกยอดยกมา" : ""); c.title = "ปีแรกที่ใช้โปรแกรม: กรอกยอดยกมาเองครั้งเดียว ปีต่อไปโปรแกรมยกให้อัตโนมัติ"; cr.appendChild(c); });
-  } else balCells(md.opening, null, md.def).forEach(v => cr.appendChild(td("auto", v)));
+    const ob = book(R.typeId, R.fy), o = ob.opening, os = ob.openSet || {};
+    ACCTS.forEach(a => { const c = inp("n", "o-" + a, (o[a] || os[a]) ? fmt(o[a]) : "", a === defAcct(R.typeId) ? "กรอกยอดยกมา" : ""); c.title = "ปีแรกที่ใช้โปรแกรม: กรอกยอดยกมาเองครั้งเดียว ปีต่อไปโปรแกรมยกให้อัตโนมัติ"; cr.appendChild(c); });
+  } else balCells(md.opening, md.openShow, md.def).forEach(v => cr.appendChild(td("auto", v)));
   cr.append(td("autol", ""), td("g"));
   body.appendChild(cr);
 
@@ -1602,7 +1609,10 @@ function onCellChange(i) {
   const tr = i.closest("tr"), kind = tr.dataset.kind, f = i.dataset.f, b = book(R.typeId, R.fy, true);
   if (kind === "carry") {
     const v = parseMoney(i.value); if (isNaN(v)) { regMsg("ยอดยกมาไม่ถูกต้อง", true); return; }
-    b.opening[f.slice(2)] = v; saveLedger(); scheduleRender(); return;
+    const a = f.slice(2); b.opening[a] = v;
+    b.openSet = b.openSet || {};
+    if (String(i.value).trim() === "") delete b.openSet[a]; else b.openSet[a] = true;   // กรอก 0 ก็ยังแสดง 0.00
+    saveLedger(); scheduleRender(); return;
   }
   let e;
   if (kind === "blank") {
